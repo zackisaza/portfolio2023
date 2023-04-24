@@ -1,5 +1,8 @@
 import {
-    zett,
+    gif,
+    gif2,
+    gif3,
+    gif4,
     javascript,
     typescript,
     html,
@@ -40,19 +43,19 @@ export const navLinks = [
 const services = [
     {
         title: "Fron-end Developer",
-        icon: zett,
+        icon: gif,
     },
     {
         title: "Web Designer",
-        icon: zett,
+        icon: gif2,
     },
     {
         title: "Back-end Developer",
-        icon: zett,
+        icon: gif3,
     },
     {
-        title: "Devops Developer",
-        icon: zett,
+        title: "AWS Devops Developer",
+        icon: gif4,
     },
 ];
 
@@ -117,23 +120,10 @@ const technologies = [
 
 const experiences = [
     {
-        title: "Full-Stack Developer",
-        company_name: "Independent",
-        icon: independent,
-        iconBg: "#383E56",
-        date: "July 2019 - March 2020",
-        points: [
-            "Created and designed websites and apps for different customers. ",
-            "A Web3 Decentralized Finance (DApp with front-end on React)",
-            "A blog website (NodeJS, EJS, MongoDB)",
-            "A mobile App website (Bootstrap, JS), and a weather app (NodeJS, EJS).",
-        ],
-    },
-    {
         title: "Full-Stack Engineer",
         company_name: "System Life INC",
         icon: systemlife,
-        iconBg: "#E6DEDD",
+        iconBg: "#000",
         date: "Oct 2020 - Present",
         points: [
             "Developed multiple Apps and Websites as Manager (Pyme) and Mr. Lukas.",
@@ -141,8 +131,20 @@ const experiences = [
             "Implementing responsive design and ensuring cross-browser compatibility.",
             "Participating in code reviews and providing constructive feedback to other developers.",
         ],
-    }
-    
+    },
+    {
+        title: "Web Developer",
+        company_name: "Freelance",
+        icon: independent,
+        iconBg: "#000",
+        date: "July 2019 - March 2020",
+        points: [
+            "Created and designed websites and apps for different customers. ",
+            "A Web3 Decentralized Finance (DApp with front-end on React)",
+            "A blog website (NodeJS, EJS, MongoDB)",
+            "A mobile App website (Bootstrap, JS), and a weather app (NodeJS, EJS).",
+        ],
+    } 
 ];
 
 

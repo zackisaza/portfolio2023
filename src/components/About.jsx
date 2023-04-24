@@ -25,7 +25,7 @@ const ServiceCard = ({index, title, icon}) =>
 						alt={title}
 						className='w-30 h-30 object-contain'
 					/>
-					<h3 className='text-white-200 text-[20px] font-bold text-center'>
+					<h3 className='text-white-200 text-[20px] font-bold text-center mb-7'>
 						{title}
 					</h3>
 				</div>
@@ -37,24 +37,23 @@ const ServiceCard = ({index, title, icon}) =>
 const About = () => {
   return (
 		<>
-			<motion.div
-				variants={textVariant()}
-				className='mt-10'>
+			<motion.div variants={textVariant()}>
 				<p className={styles.sectionSubText}>Introduction</p>
 				<h2 className={styles.sectionHeadText}>Overview.</h2>
 			</motion.div>
 			<motion.p
 				variants={fadeIn("", "", 0.1, 1)}
 				className='mt-4 text-secondary text-[17px] m-w-3xl leading-[30px]'>
-				I'm a skilled developer with solid Front-end knowledge of React, ES6+,
-				HTMLS, CSS3+, BootstrapCSS, TailwindCSS, and ThreeJS. Back-end expertise
-				in NodeJS, ExpressJS, EJS and RESTful APIs. Strong understanding of
-				design principles, UI/UX. Advanced CSS (CSS Modules, Sass, and
-				responsive design. I'm a AWS Certified Developer and experienced in SQL
-				and NoSQL databases (MySQL, MongoDB, Mongoose). Great understanding of
-				Web3 (DApp) development, Blockchain, NFT’s and Crypto market. A man with
-				a drive for results while focusing on high code quality and performance.
-				Let's work together!
+				I'm a skilled developer with solid front-end knowledge of <b>React</b>,{" "}
+				<b>ES6+</b>, <b>HTML5</b>, <b>CSS3+</b>, <b>Redux</b>, <b>TypeScript</b>
+				, <b>Bootstrap5</b>, <b>TailwindCSS</b> and <b>ThreeJS</b>. Back-end
+				expertise in <b>NodeJS</b>, <b>ExpressJS</b>, <b>EJS</b> and experienced
+				on building <b>RESTful APIs</b>. Strong understanding of design
+				principles, UI/UX and responsive design. <b>AWS Certified Devops</b>{" "}
+				Developer and background using <b>MongoDB</b> and <b>Mongoose</b>. Great
+				understanding of <b>WEB3</b> and <b>DApps</b> development, <b>Git</b>{" "}
+				and <b>GitHub</b>. Positive attitude, strong work ethic and a drive for
+				results while focusing on <b>high code quality</b> and performance. Let's work together!
 			</motion.p>
 			<div className='mt-20 flex flex-wrap gap-10'>
 				{services.map((service, index) => (
@@ -65,7 +64,6 @@ const About = () => {
 					/>
 				))}
 			</div>
-			
 		</>
 	);
 }

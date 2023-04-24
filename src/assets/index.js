@@ -1,9 +1,12 @@
 import logo from "./logo.png";
-import zett from "./zett.gif";
 import github from "./github.png";
 import menu from "./menu.svg";
 import close from "./close.svg";
 import gif from "./zett.gif"
+import gif2 from "./zett-vaquerito.gif"
+import gif3 from "./zett-trajecito.gif"
+import gif4 from "./zett-ingeniero.gif"
+
 import link from "./link.svg"
 
 import css from "./tech/css.png";
@@ -31,7 +34,6 @@ import tripguide from "./tripguide.png";
 export {
   logo,
   link,
-  zett,
   github,
   menu,
   close,
@@ -54,5 +56,8 @@ export {
   carrent,
   jobit,
   tripguide,
-  gif
+  gif,
+  gif2,
+  gif3,
+  gif4
 };
