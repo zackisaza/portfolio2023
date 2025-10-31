@@ -88,7 +88,7 @@ const Contact = () => {
 							value={form.name}
 							onChange={handleChange}
 							placeholder="What's your name?"
-							className='bg-secondary py-4 px-6 placeholder:text-gray text-black-200 rounded-lg outline-none border-none font-medium'
+							className='bg-white-100 py-4 px-6 placeholder:text-black-100/60 text-black-200 rounded-lg outline-none border border-black-100/20 font-medium'
 						/>
 					</label>
 					<label className='flex flex-col'>
@@ -99,7 +99,7 @@ const Contact = () => {
 							value={form.email}
 							onChange={handleChange}
 							placeholder="What's your email?"
-							className='bg-secondary py-4 px-6 placeholder:text-gray text-black-200 rounded-lg outline-none border-none font-medium'
+							className='bg-white-100 py-4 px-6 placeholder:text-black-100/60 text-black-200 rounded-lg outline-none border border-black-100/20 font-medium'
 						/>
 					</label>
 					<label className='flex flex-col'>
@@ -112,14 +112,17 @@ const Contact = () => {
 							value={form.message}
 							onChange={handleChange}
 							placeholder='What do you want to say?'
-							className='bg-secondary py-4 px-6 placeholder:text-gray text-black-200 rounded-lg outline-none border-none font-medium'
+							className='bg-white-100 py-4 px-6 placeholder:text-black-100/60 text-black-200 rounded-lg outline-none border border-black-100/20 font-medium'
 						/>
 					</label>
-					<button
-						type='submit'
-						className='bg-tertiary py-3 px-8 outline-none w-fit text-black-200 font-bold shadow-md shadow-primary rounded-xl'>
-						{loading ? "Sending..." : "Send"}
-					</button>
+				<motion.button
+					type='submit'
+					className='relative py-3 px-8 outline-none w-fit text-white-100 font-semibold shadow-md shadow-primary rounded-xl overflow-hidden'
+					animate={{ y: [0, -6, 0], scale: [1, 1.05, 1] }}
+					transition={{ duration: 2.4, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' }}>
+					<span className='absolute inset-0 bg-gradient-to-r from-[#8b1120] via-[#c02035] to-[#8b1120] opacity-90 transition-opacity duration-200 hover:opacity-100' />
+					<span className='relative z-10'>{loading ? "Sending..." : "Send"}</span>
+				</motion.button>
 				</form>
 			</motion.div>
 			<motion.div

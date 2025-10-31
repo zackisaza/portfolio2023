@@ -5,23 +5,25 @@ import {
     gif4,
     javascript,
     typescript,
-    html,
-    css,
     reactjs,
     redux,
     tailwind,
     nodejs,
     mongodb,
-    git,
     aws,
-    bootstrap,
+    docker,
+    kubernetes,
+    python,
+    nextjs,
+    django,
+    postgrest,
     independent,
     systemlife,
+    conversion,
+    soluciones,
     carrent,
     jobit,
     tripguide,
-    threejs,
-    web3,
     
 } from "../assets";
 
@@ -31,8 +33,16 @@ export const navLinks = [
         title: "About",
     },
     {
-        id: "work",
-        title: "Work",
+        id: "tech",
+        title: "Techs",
+    },
+    {
+        id: "experience",
+        title: "Experience",
+    },
+    {
+        id: "projects",
+        title: "Projects",
     },
     {
         id: "contact",
@@ -42,32 +52,32 @@ export const navLinks = [
 
 const services = [
     {
-        title: "Fron-end Developer",
-        icon: gif,
+        title: "Deep technical mastery",
+        description:
+            "Data structures, algorithms, databases, concurrency, and system architecture.      ",
+        icon: "mastery",
     },
     {
-        title: "Web Designer",
-        icon: gif2,
+        title: "System design & scalability",
+        description:
+            "Distributed systems, queues, caching, microservices, and load balancing end-to-end.",
+        icon: "system",
     },
     {
-        title: "Back-end Developer",
-        icon: gif3,
+        title: "Automation & DevOps",
+        description:
+            "CI/CD pipelines, Docker, Kubernetes, Git, testing, and cloud deployment.           ",
+        icon: "devops",
     },
     {
-        title: "AWS Devops Developer",
-        icon: gif4,
+        title: "Technical leadership",
+        description:
+            "Code reviews, mentoring, architectural communication, and quality enforcement.     ",
+        icon: "leadership",
     },
 ];
 
 const technologies = [
-    {
-        name: "HTML 5",
-        icon: html,
-    },
-    {
-        name: "CSS 3",
-        icon: css,
-    },
     {
         name: "JavaScript",
         icon: javascript,
@@ -97,54 +107,117 @@ const technologies = [
         icon: mongodb,
     },
     {
-        name: "Three JS",
-        icon: threejs,
-    },
-    {
-        name: "git",
-        icon: git,
-    },
-    {
         name: "AWS",
         icon: aws,
     },
     {
-        name: "Bootstrap 5",
-        icon: bootstrap,
+        name: "Docker",
+        icon: docker,
     },
     {
-        name: "Web 3",
-        icon: web3,
+        name: "Kubernetes",
+        icon: kubernetes,
     },
+    {
+        name: "Python",
+        icon: python,
+    },
+    {
+        name: "Next.js",
+        icon: nextjs,
+    },
+    {
+        name: "Django",
+        icon: django,
+    },
+    {
+        name: "PostgREST",
+        icon: postgrest,
+    }
 ];
 
 const experiences = [
     {
-        title: "Full-Stack Engineer",
-        company_name: "System Life INC",
-        icon: systemlife,
+        title: "Senior Backend Engineer",
+        company_name: "Conversion Monster – Buffalo, NY (Remote)",
+        icon: conversion,
         iconBg: "#000",
-        date: "Oct 2020 - Present",
+        date: "Jun 2024 – Present",
         points: [
-            "Developed multiple Apps and Websites as Manager (Pyme) and Mr. Lukas.",
-            "Collaborating with cross-functional teams including designers and other developers to create high-quality products.",
-            "Implementing responsive design and ensuring cross-browser compatibility.",
-            "Participating in code reviews and providing constructive feedback to other developers.",
+            "Leading backend architecture and modernization using Node.js (NestJS), Python (FastAPI), and PHP (Laravel 11).",
+            "Designed and maintained microservice-based systems with PostgreSQL, MongoDB, and Redis, ensuring scalability and fault tolerance.",
+            "Deployed and monitored production systems using Docker, Kubernetes, and AWS ECS/Lambda.",
+            "Implemented event-driven architecture with RabbitMQ and Kafka for asynchronous workflows.",
+            "Improved CI/CD automation pipelines using GitHub Actions, Terraform, and AWS CodeBuild.",
+            "Mentored developers, conducted code reviews, and enforced clean architecture and DDD principles across the team.",
         ],
     },
     {
-        title: "Web Developer",
-        company_name: "Freelance",
+        title: "Mid–Senior Backend Engineer",
+        company_name: "Conversion Monster – Buffalo, NY (Remote)",
+        icon: conversion,
+        iconBg: "#000",
+        date: "Nov 2023 – Jun 2024",
+        points: [
+            "Developed and maintained RESTful and GraphQL APIs using Node.js (Express) and Python (Django).",
+            "Migrated monolithic systems into modular services, improving performance and maintainability.",
+            "Integrated AWS services (S3, EC2, RDS) and optimized data handling with PostgreSQL and MongoDB.",
+            "Implemented containerized environments using Docker and introduced Git-based deployment workflows.",
+            "Collaborated with frontend, QA, and product teams to ensure efficient feature delivery and system stability.",
+        ],
+    },
+    {
+        title: "Front-End Engineer",
+        company_name: "Soluciones Star – Medellín, CO (Hybrid)",
+        icon: soluciones,
+        iconBg: "#000",
+        date: "Mar 2023 – Nov 2023",
+        points: [
+            "Developed modern, user-centric interfaces using React.js, Next.js, and TypeScript.",
+            "Led project deployments with Vercel, collaborating closely with backend teams for seamless integration.",
+            "Focused on performance optimization and accessibility best practices.",
+        ],
+    },
+    {
+        title: "Mid–Level Software Engineer",
+        company_name: "System Life – Armenia, CO (Remote)",
+        icon: systemlife,
+        iconBg: "#000",
+        date: "Sep 2021 – Mar 2023",
+        points: [
+            "Led backend development for Manager-Pyme and Mr. Lukas POS systems using Laravel and MySQL.",
+            "Refactored legacy modules, improving performance and maintainability by over 30%.",
+            "Integrated third-party APIs and implemented custom reporting dashboards for clients.",
+            "Participated in sprint planning, code reviews, and deployment automation.",
+            "Mentored junior developers and contributed to improving internal coding standards.",
+        ],
+    },
+    {
+        title: "Junior Software Engineer",
+        company_name: "System Life – Armenia, CO (Remote)",
+        icon: systemlife,
+        iconBg: "#000",
+        date: "Oct 2020 – Sep 2021",
+        points: [
+            "Assisted in the development and maintenance of POS and management systems built on Laravel and MySQL.",
+            "Fixed bugs, improved UI consistency, and implemented small backend modules.",
+            "Gained experience with Git, REST APIs, and responsive web interfaces.",
+            "Collaborated closely with designers to ensure high-quality deliverables and usability.",
+        ],
+    },
+    {
+        title: "Freelance Developer",
+        company_name: "Remote",
         icon: independent,
         iconBg: "#000",
-        date: "July 2019 - March 2020",
+        date: "2019 – 2023",
         points: [
-            "Created and designed websites and apps for different customers. ",
-            "A Web3 Decentralized Finance (DApp with front-end on React)",
-            "A blog website (NodeJS, EJS, MongoDB)",
-            "A mobile App website (Bootstrap, JS), and a weather app (NodeJS, EJS).",
+            "Designed and developed custom software solutions, including web platforms, management tools, and e-commerce systems.",
+            "Built applications using Laravel, React.js, Node.js, and Python, integrating REST APIs and cloud services.",
+            "Delivered end-to-end development from planning to deployment for clients across multiple industries.",
+            "Provided ongoing maintenance, optimizations, and feature upgrades to ensure long-term software reliability.",
         ],
-    } 
+    },
 ];
 
 

@@ -23,9 +23,19 @@ import redux from "./tech/redux.png";
 import tailwind from "./tech/tailwind.png";
 import typescript from "./tech/typescript.png";
 import threejs from "./tech/three.png";
+import docker from "./tech/docker.png";
+import kubernetes from "./tech/kubernetes.png";
+import python from "./tech/python.png";
+import nextjs from "./tech/nextjs.png";
+import django from "./tech/django.png";
+import postgrest from "./tech/postgrest.png";
 
 import independent from "./company/independent.png";
 import systemlife from "./company/systemlife.png";
+import conversion from "./company/conversion.png";
+import soluciones from "./company/soluciones.jpeg";
+import softwareIcon from "./company/software.png";
+import microchip from "./company/microchip.png";
 
 import carrent from "./carrent.png";
 import jobit from "./jobit.png";
@@ -51,8 +61,18 @@ export {
   tailwind,
   typescript,
   threejs,
+  docker,
+  kubernetes,
+  python,
+  nextjs,
+  django,
+  postgrest,
   systemlife,
   independent,
+  conversion,
+  soluciones,
+  softwareIcon,
+  microchip,
   carrent,
   jobit,
   tripguide,

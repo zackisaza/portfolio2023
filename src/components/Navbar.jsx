@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { styles } from "../styles";
 import { navLinks } from "../constants";
-import { logo, menu, close, link, github } from "../assets";
+import { menu, close, link, microchip } from "../assets";
 
 const Navbar = () => {
 	const [active, setActive] = useState("");
@@ -21,27 +21,21 @@ const Navbar = () => {
 						window.scrollTo(0, 0);
 					}}>
 					<img
-						src={logo}
-						alt='logo'
-						className='w-[60px] h-[60px] object-contain hover:animate-spin'
+						src={microchip}
+						alt='Zack Isaza logo'
+						className='w-[48px] h-[48px] object-contain hover:scale-110 transition-transform duration-200'
 					/>
 					<p className='text-black-100 text-[18px] font-bold cursor-pointer'>
-						Zett Isaza
+						Zack Isaza
 						<span className='-mt-2 sm:block hidden text-[#565656]'>
-							Portfolio
+							Sr. Engineer
 						</span>
 					</p>
 				</Link>
 
 				<ul className='list-none hidden sm:flex flex-row gap-10'>
 					<div className='flex flex-row lg:gap-5 gap-1'>
-						<a href='https://github.com/CowboyZett'>
-							<img
-								src={github}
-								className='gray-gradient cursor-pointer w-7 h-7 hover:scale-110 duration-200 rounded-2xl'
-							/>
-						</a>
-						<a href='https://www.linkedin.com/in/zett-isaza-b107b226a/'>
+						<a href='https://www.linkedin.com/in/zackisaza/'>
 							<img
 								src={link}
 								className='cursor-pointer w-8 h-8 hover:scale-110 duration-200'
@@ -72,13 +66,7 @@ const Navbar = () => {
             p-6 black-gradient absolute top-20 right-5 mx-4 my-2 min-w-[140px] z-10 rounded-xl`}>
 						<ul className='list-none flex justify-end items-start  flex-col gap-4'>
 							<li>
-								<a href='https://github.com/CowboyZett'>
-									<img
-										src={github}
-										className='gray-gradient cursor-pointer w-7 h-7 hover:scale-110 duration-200 rounded-2xl'
-									/>
-								</a>
-								<a href='https://www.linkedin.com/in/zett-isaza-b107b226a/'>
+								<a href='https://www.linkedin.com/in/zackisaza/'>
 									<img
 										src={link}
 										className='mt-[15px] cursor-pointer w-8 h-8 hover:scale-110 duration-200'

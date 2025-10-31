@@ -17,6 +17,7 @@ const ExperienceCard = ({ experience }) => (
     contentStyle={{ background: '#f2f2f2', color: '#000' }}
     contentArrowStyle={{ borderRight: '7px solid #000' }}
     date={experience.date}
+    dateClassName='timeline-date-lg'
     iconStyle={{ background: experience.iconBg }}
     icon={
       <div className='flex justify-center items-center w-full h-full'>
@@ -33,6 +34,7 @@ const ExperienceCard = ({ experience }) => (
       <p className='text-tertiary text-16px font-bold'
         style={{ margin: 0 }}>
         {experience.company_name}</p>
+      <span className='timeline-date-mobile'>{experience.date}</span>
     </div>
     <ul className='mt-4 list-disc ml-5 space-y-2'>
       {experience.points.map((point, index) => (
@@ -64,4 +66,4 @@ const Experience = () => {
 	);
 }
 
-export default SectionWrapper(Experience, 'work')
+export default SectionWrapper(Experience, "experience");

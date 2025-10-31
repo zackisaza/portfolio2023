@@ -8,7 +8,7 @@ const Loader = () => {
 			<p
 				style={{
 					fontSize: 30,
-					color: "#d39f1f",
+					color: "#8b1120",
 					fontWeight: 800,
 					marginTop: 30,
 					marginLeft: -70,

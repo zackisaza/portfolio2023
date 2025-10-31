@@ -1,11 +1,32 @@
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { styles } from "../styles";
 import { ComputersCanvas } from "./canvas";
 import { gif } from "../assets";
 
 const Hero = () => {
+	const heroRef = useRef(null);
+	const [heroInView, setHeroInView] = useState(true);
+
+	useEffect(() => {
+		const node = heroRef.current;
+		if (!node) return undefined;
+
+		const observer = new IntersectionObserver(
+			([entry]) => setHeroInView(entry.isIntersecting),
+			{
+				root: null,
+				rootMargin: "0px",
+				threshold: 0.25,
+			}
+		);
+
+		observer.observe(node);
+		return () => observer.unobserve(node);
+	}, []);
+
 	return (
-		<section className='relative w-full h-screen mx-auto'>
+		<section ref={heroRef} className='relative w-full h-screen mx-auto'>
 			<div
 				className={`${styles.paddingX} lg:mt-6 absolute inset-0 top-[30px] max-w-7xl mx-auto flex flex-row items-start gap-5`}>
 				<div className='flex flex-col justify-center items-center mt-5 lg:mt-9'>
@@ -18,10 +39,10 @@ const Hero = () => {
 					className='content mt-9
 				'>
 					
-					<h2 className={`${styles.heroHeadText}`}>I'M ZETT</h2>
-					<h2 className={`${styles.heroHeadText}`}>I'M ZETT</h2>
+					<h2 className={`${styles.heroHeadText}`}>I'm Zack</h2>
+					<h2 className={`${styles.heroHeadText}`}>I'm Zack</h2>
 					<p className={`${styles.heroSubText} text-black-100 z-20`}>
-						A programmer.
+						Senior Software Engineer.
 					</p>
 					<div>
 						<img
@@ -32,7 +53,7 @@ const Hero = () => {
 					</div>
 				</div>
 			</div>
-			<ComputersCanvas />
+			<ComputersCanvas active={heroInView} />
 			<div className='absolute xs:botton-10 bottom-32 w-full flex justify-center items-center hover:scale-90 duration-200'>
 				<a href='#about'>
 					<div className='mt-10 w-[35px] h-[54px] rounded-3xl border-4 border-tertiary flex justify-center items-start p-2'>
