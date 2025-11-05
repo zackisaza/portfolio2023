@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "deploy": "node scripts/deploy.mjs",
     "optimize:images": "node scripts/optimize-images.mjs",
     "favicons": "node scripts/generate-favicons.mjs",
     "lint": "eslint src --ext js,jsx --report-unused-disable-directives --max-warnings 0",
@@ -14,7 +15,7 @@
   "dependencies": {
     "@emailjs/browser": "^3.11.0",
     "@react-three/drei": "^9.65.5",
-    "@react-three/fiber": "^8.12.2",
+    "@react-three/fiber": "^8.13.0",
     "framer-motion": "^10.12.4",
     "maath": "^0.5.3",
     "react": "^18.2.0",
@@ -22,7 +23,7 @@
     "react-router-dom": "^6.10.0",
     "react-tilt": "^1.0.2",
     "react-vertical-timeline-component": "^3.6.0",
-    "three": "^0.151.3"
+    "three": "^0.150.1"
   },
   "devDependencies": {
     "@types/react": "^18.0.28",

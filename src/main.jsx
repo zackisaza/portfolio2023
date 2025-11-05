@@ -1,5 +1,12 @@
+// Build version: 2025.11.05-3
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+
+// Ensure React is globally available for Three.js compatibility
+if (typeof window !== 'undefined') {
+  window.React = React;
+  window.ReactDOM = ReactDOM;
+}
 import App from "./App.jsx";
 import "./index.css";
 import { LanguageProvider } from "./context/LanguageContext.jsx";
