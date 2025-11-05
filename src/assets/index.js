@@ -1,20 +1,13 @@
 import logo from "./logo.png";
-import github from "./github.png";
 import menu from "./menu.svg";
 import close from "./close.svg";
-import gif from "./zett.gif"
-import gif2 from "./zett-vaquerito.gif"
-import gif3 from "./zett-trajecito.gif"
-import gif4 from "./zett-ingeniero.gif"
+import link from "./link.svg";
 
-import link from "./link.svg"
+// Use optimized formats
+import wolfcave from "./wolfcave.webp";
+import wolfcavetext from "./wolfcavetext.webp";
 
-import css from "./tech/css.png";
 import aws from "./tech/aws.png";
-import bootstrap from "./tech/bootstrap.png";
-import web3 from "./tech/web3.png";
-import git from "./tech/git.png";
-import html from "./tech/html.png";
 import javascript from "./tech/javascript.png";
 import mongodb from "./tech/mongodb.png";
 import nodejs from "./tech/nodejs.png";
@@ -22,7 +15,6 @@ import reactjs from "./tech/reactjs.png";
 import redux from "./tech/redux.png";
 import tailwind from "./tech/tailwind.png";
 import typescript from "./tech/typescript.png";
-import threejs from "./tech/three.png";
 import docker from "./tech/docker.png";
 import kubernetes from "./tech/kubernetes.png";
 import python from "./tech/python.png";
@@ -34,25 +26,39 @@ import independent from "./company/independent.png";
 import systemlife from "./company/systemlife.png";
 import conversion from "./company/conversion.png";
 import soluciones from "./company/soluciones.jpeg";
-import softwareIcon from "./company/software.png";
-import microchip from "./company/microchip.png";
 
-import carrent from "./carrent.png";
-import jobit from "./jobit.png";
-import tripguide from "./tripguide.png";
+import customSoftware from "./services/custom_software.svg";
+import frontendService from "./services/frontend.svg";
+import backendService from "./services/backend.svg";
+import designService from "./services/design.svg";
+import architectureService from "./services/architecture.svg";
+import automationService from "./services/automation.svg";
+
+// Pokémon images (6)
+import pokemonBulbasaur from "./pokemons/bulbasaur.avif";
+import pokemonPikachu from "./pokemons/pikachu.jpg";
+import pokemonCharmander from "./pokemons/Charmander.webp";
+import pokemonSquirtle from "./pokemons/Squirtle.jpg";
+import pokemonGreninja from "./pokemons/greninja.webp";
+import pokemonTogepi from "./pokemons/togepi.webp";
+
+// Pokémon type icons
+import typeGrass from "./tipospokemon/planta.png";
+import typeElectric from "./tipospokemon/electrico.png";
+import typeFire from "./tipospokemon/fuego.png";
+import typeWater from "./tipospokemon/agua.png";
+import typeFairy from "./tipospokemon/hada.png";
+import typeDark from "./tipospokemon/siniestro.png";
+import typeEnergy from "./tipospokemon/energy.png";
 
 export {
   logo,
   link,
-  github,
+  wolfcave,
+  wolfcavetext,
   menu,
   close,
-  css,
   aws,
-  bootstrap,
-  web3,
-  git,
-  html,
   javascript,
   mongodb,
   nodejs,
@@ -60,7 +66,6 @@ export {
   redux,
   tailwind,
   typescript,
-  threejs,
   docker,
   kubernetes,
   python,
@@ -71,13 +76,23 @@ export {
   independent,
   conversion,
   soluciones,
-  softwareIcon,
-  microchip,
-  carrent,
-  jobit,
-  tripguide,
-  gif,
-  gif2,
-  gif3,
-  gif4
+  customSoftware,
+  frontendService,
+  backendService,
+  designService,
+  architectureService,
+  automationService,
+  pokemonBulbasaur,
+  pokemonPikachu,
+  pokemonCharmander,
+  pokemonSquirtle,
+  pokemonGreninja,
+  pokemonTogepi,
+  typeGrass,
+  typeElectric,
+  typeFire,
+  typeWater,
+  typeFairy,
+  typeDark,
+  typeEnergy
 };

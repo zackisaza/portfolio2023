@@ -5,6 +5,9 @@ import { styles } from "../styles";
 import { services } from "../constants";
 import { fadeIn, textVariant } from "../utils/motion";
 import { SectionWrapper } from "../hoc";
+import Typewriter from "./Typewriter";
+import { useLanguage } from "../context/LanguageContext";
+import { typeGrass, typeElectric, typeFire } from "../assets";
 
 const iconMap = {
 	mastery: (className = "") => (
@@ -140,8 +143,8 @@ const iconMap = {
 const ServiceCard = ({ index, title, description, icon }) =>
 {
   return (
-		<Tilt
-			className='xs:w-[240px] sm:w-[250px] w-full'
+			<Tilt
+				className='w-full xs:w-[300px] sm:w-[250px]'
 			options={{
 				max: 45,
 				scale: 1,
@@ -166,8 +169,8 @@ const ServiceCard = ({ index, title, description, icon }) =>
 							{title}
 						</h3>
 					</div>
-					<p className='text-secondary text-sm leading-relaxed text-center'>
-						{description}
+					<p className='text-secondary text-base md:text-sm leading-relaxed text-center'>
+						<Typewriter content={description} speed={20} startDelay={140} cursor={false} />
 					</p>
 				</div>
 			</motion.div>
@@ -176,29 +179,53 @@ const ServiceCard = ({ index, title, description, icon }) =>
 }
 
 const About = () => {
+	const { t, language } = useLanguage();
+
   return (
 		<>
-			<motion.div variants={textVariant()}>
-				<p className={styles.sectionSubText}>Introduction</p>
-				<h2 className={styles.sectionHeadText}>Overview.</h2>
+					<motion.div variants={textVariant()} className='px-4 sm:px-0 relative'>
+				<p className={styles.sectionSubText}><Typewriter content={t("about.subtitle")} speed={26} startDelay={60} /></p>
+				<h2 className={styles.sectionHeadText}><Typewriter content={t("about.title")} speed={26} startDelay={120} /></h2>
+				
+				{/* Pokemon Type Decorations */}
+				<motion.div 
+					className='absolute -top-6 -right-4 hidden md:block'
+					initial={{ opacity: 0, scale: 0, rotate: -180 }}
+					animate={{ opacity: 0.15, scale: 1, rotate: 0 }}
+					transition={{ delay: 0.5, duration: 0.8, type: "spring" }}
+				>
+					<motion.img 
+						src={typeElectric} 
+						alt='' 
+						className='w-16 h-16'
+						animate={{ 
+							rotate: [0, 10, 0, -10, 0],
+							y: [0, -5, 0, 5, 0]
+						}}
+						transition={{ 
+							duration: 4,
+							repeat: Infinity,
+							ease: "easeInOut"
+						}}
+					/>
+				</motion.div>
 			</motion.div>
-			<motion.p
+											<motion.p
 				variants={fadeIn("", "", 0.1, 1)}
-				className='mt-4 text-secondary text-[20px] m-w-3xl leading-[30px]'>
-				I'm a senior backend engineer focused on designing <b>high-performance</b>, <b>scalable</b>, and <b>secure systems</b>. 
-  Specialized in <b>Node.js</b>, <b>TypeScript</b>, <b>NestJS</b>, <b>Express</b>, 
-  <b>PHP</b> (<b>Laravel</b>, <b>Symfony</b>), and <b>Python</b> (<b>Django</b>, <b>FastAPI</b>). 
-  Skilled in <b>PostgreSQL</b>, <b>MongoDB</b>, <b>Redis</b>, <b>Docker</b>, <b>Kubernetes</b>, and <b>AWS</b>. 
-  Experienced in <b>serverless</b> architectures, <b>CI/CD automation</b>, and <b>testing pipelines</b>. 
-  Passionate about <b>clean architecture</b>, <b>system observability</b>, and <b>code quality</b>. 
-  Strong background in <b>technical leadership</b>, mentoring developers, and delivering reliable backend solutions in <b>2025</b>.
-			</motion.p>
-			<div className='mt-20 flex flex-wrap gap-10'>
+												className='mt-4 text-secondary text-[20px] w-full leading-[30px] px-6 sm:px-0'
+								>
+									<Typewriter rich content={t("about.description")} speed={22} startDelay={180} />
+								</motion.p>
+			<div className='mt-20 flex flex-wrap gap-10 justify-center px-4 sm:px-0'>
 				{services.map((service, index) => (
 					<ServiceCard
-						key={service.title}
+						key={service.id}
 						index={index}
-						{...service}
+						title={service.title[language] ?? service.title.en}
+						description={
+							service.description[language] ?? service.description.en
+						}
+						icon={service.icon}
 					/>
 				))}
 			</div>

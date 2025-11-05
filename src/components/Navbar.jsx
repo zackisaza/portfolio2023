@@ -1,17 +1,41 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { styles } from "../styles";
 import { navLinks } from "../constants";
-import { menu, close, link, microchip } from "../assets";
+import { menu, close, link, wolfcave } from "../assets";
+import { useLanguage } from "../context/LanguageContext";
+import LanguageToggle from "./LanguageToggle";
+import Typewriter from "./Typewriter";
 
 const Navbar = () => {
 	const [active, setActive] = useState("");
 	const [toggle, setToggle] = useState(false);
+	const [hideOnDesktop, setHideOnDesktop] = useState(false);
+	const { language, setLanguage, t } = useLanguage();
+
+	useEffect(() => {
+		const mq = window.matchMedia('(min-width: 1024px)');
+		const update = () => {
+			const scrolled = window.scrollY > 160;
+			setHideOnDesktop(mq.matches && scrolled);
+		};
+		update();
+		const onScroll = () => update();
+		const onResize = () => update();
+		window.addEventListener('scroll', onScroll, { passive: true });
+		mq.addEventListener('change', onResize);
+		window.addEventListener('resize', onResize);
+		return () => {
+			window.removeEventListener('scroll', onScroll);
+			mq.removeEventListener('change', onResize);
+			window.removeEventListener('resize', onResize);
+		};
+	}, []);
 
 	return (
-		<nav
-			className={`${styles.paddingX} w-full flex items-center py-5 top-0 z-20 bg-white-200`}>
+		   <nav
+			   className={`${styles.paddingX} w-full flex items-center py-5 top-0 relative z-[100] bg-white-200 transition-all duration-500 ease-in-out ${hideOnDesktop ? 'lg:opacity-0 lg:pointer-events-none lg:-translate-y-4' : 'opacity-100 lg:translate-y-0'}`}>
 			<div className='w-full flex justify-between items-center max-w-7xl mx-auto'>
 				<Link
 					to='/'
@@ -21,39 +45,67 @@ const Navbar = () => {
 						window.scrollTo(0, 0);
 					}}>
 					<img
-						src={microchip}
-						alt='Zack Isaza logo'
+						src={wolfcave}
+						alt='Wolfcave logo'
+						width="48"
+						height="48"
+						decoding="async"
 						className='w-[48px] h-[48px] object-contain hover:scale-110 transition-transform duration-200'
 					/>
 					<p className='text-black-100 text-[18px] font-bold cursor-pointer'>
 						Zack Isaza
 						<span className='-mt-2 sm:block hidden text-[#565656]'>
-							Sr. Engineer
+							<Typewriter content={t("navbar.tagline")} speed={26} startDelay={80} />
 						</span>
 					</p>
 				</Link>
 
-				<ul className='list-none hidden sm:flex flex-row gap-10'>
-					<div className='flex flex-row lg:gap-5 gap-1'>
-						<a href='https://www.linkedin.com/in/zackisaza/'>
-							<img
-								src={link}
-								className='cursor-pointer w-8 h-8 hover:scale-110 duration-200'
-							/>
-						</a>
-					</div>
-					{navLinks.map((Link) => (
-						<li
-							key={Link.id}
-							className={`${
-								active === Link.title ? "text-secondary" : "text-black-100"
-							} hover:text-tertiary text-[18px] font-medium cursor-pointer`}
-							onClick={() => setActive(Link.title)}>
-							<a href={`#${Link.id}`}>{Link.title}</a>
-						</li>
-					))}
-				</ul>
-				<div className='sm:hidden flex flex-1 justify-end items-center'>
+				<div className='hidden sm:flex flex-1 items-center justify-end gap-8'>
+					<a
+						href='https://www.linkedin.com/in/zackisaza/'
+						target='_blank'
+						rel='noopener noreferrer'
+						className='flex-shrink-0'>
+						<img
+							src={link}
+							alt='LinkedIn'
+							width="32"
+							height="32"
+							loading='lazy'
+							decoding='async'
+							className='cursor-pointer w-8 h-8 hover:scale-110 duration-200'
+						/>
+					</a>
+					   <ul className='flex items-center gap-8 whitespace-nowrap list-none'>
+						   {navLinks.map((linkItem) => {
+							   const label =
+								   linkItem.title[language] ?? linkItem.title.en ?? linkItem.id;
+							   const isActive = active === linkItem.id;
+							   return (
+								   <li
+									   key={linkItem.id}
+									   className={`relative font-medium cursor-pointer text-[18px] transition-all duration-300
+										   ${isActive ? 'text-tertiary scale-110 drop-shadow-lg' : 'text-black-100 hover:text-tertiary hover:scale-105 hover:drop-shadow'}
+									   `}
+									   onClick={() => setActive(linkItem.id)}>
+									   <a href={`#${linkItem.id}`}>{label}</a>
+									   {isActive && (
+										   <span className="absolute left-1/2 -bottom-1.5 -translate-x-1/2 w-6 h-1 rounded-full bg-tertiary/80 blur-[2px] animate-pulse" />
+									   )}
+								   </li>
+							   );
+						   })}
+					   </ul>
+					<LanguageToggle />
+				</div>
+				<div className='sm:hidden flex flex-1 justify-end items-center gap-3'>
+					<LanguageToggle
+						size='mobile'
+						onSelect={(code) => {
+							setLanguage(code);
+							setToggle(false);
+						}}
+					/>
 					<img
 						src={toggle ? close : menu}
 						alt='menu'
@@ -66,26 +118,40 @@ const Navbar = () => {
             p-6 black-gradient absolute top-20 right-5 mx-4 my-2 min-w-[140px] z-10 rounded-xl`}>
 						<ul className='list-none flex justify-end items-start  flex-col gap-4'>
 							<li>
-								<a href='https://www.linkedin.com/in/zackisaza/'>
+								<a 
+									href='https://www.linkedin.com/in/zackisaza/'
+									target='_blank'
+									rel='noopener noreferrer'>
 									<img
 										src={link}
-										className='mt-[15px] cursor-pointer w-8 h-8 hover:scale-110 duration-200'
+										alt='LinkedIn'
+										width="32"
+										height="32"
+										loading='lazy'
+										decoding='async'
+										className='cursor-pointer w-8 h-8 hover:scale-110 duration-200'
 									/>
 								</a>
 							</li>
-							{navLinks.map((Link) => (
-								<li
-									key={Link.id}
-									className={`${
-										active === Link.title ? "text-tertiary" : "text-secondary"
-									} font-poppins font-medium cursor-pointer text-[16px]`}
-									onClick={() => {
-										setToggle(!toggle);
-										setActive(Link.title);
-									}}>
-									<a href={`#${Link.id}`}>{Link.title}</a>
-								</li>
-							))}
+							{navLinks.map((linkItem) => {
+								const label =
+									linkItem.title[language] ?? linkItem.title.en ?? linkItem.id;
+								return (
+									<li
+										key={linkItem.id}
+										className={`${
+											active === linkItem.id
+												? "text-tertiary"
+												: "text-secondary"
+										} font-poppins font-medium cursor-pointer text-[16px]`}
+										onClick={() => {
+											setToggle(!toggle);
+											setActive(linkItem.id);
+										}}>
+										<a href={`#${linkItem.id}`}>{label}</a>
+									</li>
+								);
+							})}
 						</ul>
 					</div>
 				</div>
