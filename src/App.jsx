@@ -1,4 +1,5 @@
 import { BrowserRouter } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import {
 	About,
 	Contact,
@@ -13,16 +14,20 @@ import {
 	ScrollToTop,
 } from "./components";
 import SideNavbar from "./components/SideNavbar";
-import LanguagePrompt from "./components/LanguagePrompt";
 import SectionSentinel from "./components/SectionSentinel";
 import { CanvasBudgetProvider } from "./context/CanvasBudgetContext";
+
+// Lazy load LanguagePrompt to avoid blocking initial render
+const LanguagePrompt = lazy(() => import("./components/LanguagePrompt"));
 
 const App = () => {
 	return (
 		<BrowserRouter>
 			<CanvasBudgetProvider>
-			<div className='relative z-0 bg-primary'>
-				<LanguagePrompt />
+			<div className='relative z-0 bg-primary w-full max-w-full overflow-x-hidden'>
+				<Suspense fallback={null}>
+					<LanguagePrompt />
+				</Suspense>
 				<div className='relative z-0 bg-hero-pattern bg-cover bg-no-repeat bg-center'>
 					<Navbar />
 					<SideNavbar />

@@ -87,7 +87,11 @@ const LanguagePrompt = () => {
 
 		if (!hasPreference || forced) {
 			console.debug("[LanguagePrompt] Opening prompt (hasPreference=", hasPreference, ", forced=", forced, ")");
-			setOpen(true);
+			// Delay opening to allow canvas and other heavy components to render first
+			const delayTimer = setTimeout(() => {
+				setOpen(true);
+			}, 1500); // Wait 1.5s for initial render to complete
+			return () => clearTimeout(delayTimer);
 		} else {
 			console.debug("[LanguagePrompt] No need to show prompt (hasPreference=", hasPreference, ")");
 			setOpen(false);
@@ -227,7 +231,7 @@ const LanguagePrompt = () => {
 			{open && (
 				<motion.div
 					key='language-prompt'
-					className='fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/60 backdrop-blur-[2px] px-4 cursor-pointer overflow-hidden'
+					className='fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/60 backdrop-blur-[2px] px-4 cursor-pointer overflow-hidden w-screen'
 					style={{ WebkitTapHighlightColor: 'transparent' }}
 					variants={backdropVariants}
 					initial='hidden'
@@ -282,7 +286,7 @@ const LanguagePrompt = () => {
 					<motion.div
 						onClick={handleModalClick}
 						onTouchStart={handleModalClick}
-						className='relative w-full max-w-sm md:max-w-md lg:max-w-lg rounded-3xl bg-white-100 shadow-2xl px-8 py-10 text-center space-y-6 border border-black-100/10 cursor-pointer overflow-hidden'
+						className='relative w-[calc(100%-2rem)] max-w-sm md:max-w-md lg:max-w-lg rounded-3xl bg-white-100 shadow-2xl px-8 py-10 text-center space-y-6 border border-black-100/10 cursor-pointer overflow-hidden'
 						animate={{
 							y: language === 'es' ? -40 : 0,
 							transition: {
