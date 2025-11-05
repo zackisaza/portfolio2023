@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState, lazy, Suspense } from "react";
+import { Tilt } from "react-tilt";
 const BallCanvasLazy = lazy(() => import("./canvas/Ball"));
 import { SectionWrapper } from "../hoc";
 import { technologies } from "../constants";
-import { motion } from "framer-motion";
-import { textVariant, fadeIn } from "../utils/motion";
+import { motion, useReducedMotion } from "framer-motion";
+import { textVariant } from "../utils/motion";
 import { styles } from "../styles";
 import { useLanguage } from "../context/LanguageContext";
 import Typewriter from "./Typewriter";
@@ -123,6 +124,7 @@ const Tech = () => {
 	const [sectionInView, setSectionInView] = useState(false);
 	const { t, language } = useLanguage();
   const { setExclusiveSection } = useCanvasBudget();
+  const prefersReducedMotion = useReducedMotion();
 
 	useEffect(() => {
 		const node = sectionRef.current;
@@ -148,7 +150,7 @@ const Tech = () => {
 	}, [sectionInView, setExclusiveSection]);
 
 	return (
-		<div className="relative">
+		<div className="relative -mb-12 md:mb-0">
 			<motion.div variants={textVariant()} className="relative">
 				<p className={`${styles.sectionSubText} text-black`}><Typewriter content={t("tech.subtitle")} speed={26} startDelay={60} /></p>
 				<h2 className={`${styles.sectionHeadText} text-black`}><Typewriter content={t("tech.title")} speed={26} startDelay={120} /></h2>
@@ -213,96 +215,77 @@ const Tech = () => {
 				))}
 			</div>
 
-			{/* Stack details: front / back / architecture (prettier cards) */}
+			{/* Stack details: front / back / architecture — cards animation refined for stability */}
 			<motion.div
 				className='mt-14 px-6 md:px-8 w-full max-w-5xl mx-auto'
-				initial={{ opacity: 0, y: 8 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.6 }}
+				initial={{ y: 8 }}
+				whileInView={{ y: 0 }}
+				viewport={{ once: true, amount: 0.25 }}
+				transition={{ duration: 0.6, ease: "easeOut" }}
 			>
-				<div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
+				<div className='grid grid-cols-1 md:grid-cols-3 gap-y-12 md:gap-6 items-stretch'>
 					{[
 						{ key: 'front', img: frontendService, title: t('tech.frontTitle'), descKey: 'tech.frontDesc' },
 						{ key: 'back', img: backendService, title: t('tech.backTitle'), descKey: 'tech.backDesc' },
 						{ key: 'arch', img: architectureService, title: t('tech.architectureTitle'), descKey: 'tech.architectureDesc' },
 					].map((col, idx) => {
 						const raw = t(col.descKey) || '';
-						const items = raw.split(/,\s*/).filter(Boolean).map((it) => {
-							const trimmed = it.trim();
-							return trimmed.replace(/^([^\p{L}]*)(\p{L})/u, (m, p1, p2) => p1 + p2.toUpperCase());
-						});
+						const items = raw
+							.split(/,\s*/)
+							.filter(Boolean)
+							.map((it) => {
+								const trimmed = it.trim();
+								return trimmed.replace(/^(^[^\p{L}]*)(\p{L})/u, (m, p1, p2) => p1 + p2.toUpperCase());
+							});
 
-							const AnimatedCard = ({ col, idx, items }) => {
-								const cardRef = useRef(null);
-								const [inViewLocal, setInViewLocal] = useState(false);
+						// Wrapper: animate in once when in view; avoid oscillation on scroll
+						const ScrollFade = ({ children }) => (
+							<motion.div
+								initial={{ opacity: 1, y: 14 }}
+								whileInView={{ y: 0 }}
+								viewport={{ once: true, amount: 0.35, margin: "-10% 0px -10% 0px" }}
+								transition={{ type: "tween", duration: 0.45, delay: idx * 0.12, ease: "easeOut" }}
+							>
+								{children}
+							</motion.div>
+						);
 
-								useEffect(() => {
-									const node = cardRef.current;
-									if (!node) return undefined;
-
-									const observer = new IntersectionObserver(
-										([entry]) => setInViewLocal(entry.isIntersecting),
-										{ root: null, rootMargin: '0px', threshold: 0.25 }
-									);
-
-									observer.observe(node);
-									return () => observer.unobserve(node);
-								}, []);
-
-								// richer variants: quick hidden (exit) to avoid perceived delay on pointer leave
-								const cardVariants = {
-									hidden: {
-										opacity: 0,
-										y: 18,
-										transition: { duration: 0.18, ease: 'easeOut' },
-									},
-									show: {
-										opacity: 1,
-										y: 0,
-										transition: { type: 'spring', duration: 0.45, stiffness: 220, damping: 20 },
-									},
-									hover: {
-										scale: 1.04,
-										y: -8,
-										boxShadow: '0 18px 30px rgba(0,0,0,0.12)',
-										transition: { type: 'spring', stiffness: 400, damping: 28 },
-									},
-									tap: { scale: 0.985, transition: { duration: 0.06 } },
-								};
-
-								return (
+						return (
+							<ScrollFade key={col.key}>
+								<Tilt
+									className='w-full h-full'
+									options={{ max: prefersReducedMotion ? 0 : 12, scale: 1, speed: 600, glare: false, perspective: 900 }}
+								>
 									<motion.div
-										ref={cardRef}
-										key={col.key}
-										variants={cardVariants}
-										initial='hidden'
-										animate={inViewLocal ? 'show' : 'hidden'}
-										whileHover='hover'
-										whileTap='tap'
-										className='relative rounded-2xl p-8 md:p-10 bg-gradient-to-br from-white/80 to-gray-50 dark:from-slate-900/70 dark:to-black/40 border border-gray-100 dark:border-gray-800 shadow-lg transition-all duration-200 cursor-pointer'
+										className='w-full h-full min-h-[300px] md:min-h-[320px] bg-gradient-to-r from-[#45070e] via-[#6a0e1c] to-[#45070e] p-[1px] rounded-[20px] shadow-card overflow-hidden will-change-transform'
+										initial={false}
+										whileHover={prefersReducedMotion ? {} : { y: -4, scale: 1.02 }}
+										whileTap={prefersReducedMotion ? {} : { scale: 0.995 }}
+										transition={{ duration: 0.25, ease: "easeOut" }}
 									>
-										<div className='absolute -top-2 left-6 w-16 h-1 rounded-full bg-[#8B0000]'></div>
-										<div className='flex items-start justify-between gap-3'>
-											<div className='flex items-center gap-5'>
+										<div className='bg-[#1a0000] rounded-[20px] py-6 px-8 h-full flex flex-col justify-start gap-6'>
+											<div className='flex flex-col items-center gap-4 text-center'>
 												{col.img ? (
-													<img src={col.img} alt={col.title} className='w-12 h-12 md:w-14 md:h-14 object-contain rounded-sm' />
+													<img
+														src={col.img}
+														alt={col.title}
+														className='w-16 h-16 object-contain drop-shadow-[0_8px_18px_rgba(0,0,0,0.25)]'
+													/>
 												) : null}
-												<h3 className='text-lg md:text-xl font-semibold mb-2 text-[#8B0000]'>{col.title}</h3>
+												<h3 className='text-white-200 text-[18px] font-semibold leading-snug'>
+													{col.title}
+												</h3>
 											</div>
+											<ul className='text-secondary text-base md:text-sm leading-relaxed list-disc list-inside space-y-2'>
+												{items.map((it, i) => (
+													<li key={i} className='text-left'>{it}</li>
+												))}
+											</ul>
 										</div>
-										<ul className='mt-4 space-y-4'>
-											{items.map((it, i) => (
-												<li key={i} className='text-base md:text-sm text-gray-700 dark:text-gray-300 flex items-start gap-3'>
-													<span className='shrink-0 mt-1 w-3 h-3 rounded-full bg-[#8B0000]/90'></span>
-													<span className='leading-tight'>{it}</span>
-												</li>
-											))}
-										</ul>
 									</motion.div>
-								);
-							};
-
-						return <AnimatedCard key={col.key} col={col} idx={idx} items={items} />;
+								</Tilt>
+							</ScrollFade>
+						);
 					})}
 				</div>
 			</motion.div>

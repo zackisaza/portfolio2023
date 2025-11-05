@@ -114,7 +114,7 @@ const Hero = () => {
 					)}
 				</div>
 			</div>
-			<div className='absolute inset-0 z-0 pointer-events-none top-24 sm:top-28 md:top-0'>
+			<div className='absolute inset-0 z-0 pointer-events-auto top-24 sm:top-28 md:top-0' style={{ touchAction: 'pan-y' }}>
 				<Suspense fallback={null}>
 					<ComputersCanvasLazy active={heroInView} sectionIndex={0} />
 				</Suspense>

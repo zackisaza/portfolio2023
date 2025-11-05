@@ -2,12 +2,15 @@ import { useState, useRef, Suspense, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Points, PointMaterial, Preload, AdaptiveDpr } from "@react-three/drei";
 import * as random from "maath/random/dist/maath-random.esm";
+import { MathUtils } from "three";
 import { useCanvasBudget } from "../../context/CanvasBudgetContext";
 
 const Stars = ({ visible = true, ...props }) => {
 	const ref = useRef();
 	const groupRef = useRef();
-	// Eliminar animación de entrada/salida
+	const materialRef = useRef();
+	// Fade-in / fade-out con opacidad del material
+	const FADE_SPEED = 3; // mayor = más rápido
 	const isSmall = typeof window !== 'undefined' && window.innerWidth < 640;
 	const count = isSmall ? 1200 : 2800;
 	const [sphere] = useState(() =>
@@ -19,17 +22,23 @@ const Stars = ({ visible = true, ...props }) => {
 			ref.current.rotation.x -= delta / 10;
 			ref.current.rotation.y -= delta / 15;
 		}
-		// Sin animación: escala y posición fijas según visibilidad
-		if (groupRef.current) {
-			groupRef.current.scale.setScalar(visible ? 1 : 0.0001);
-			groupRef.current.position.y = 0;
+		// Fade de opacidad hacia el objetivo según visibilidad
+		if (materialRef.current) {
+			const target = visible ? 1 : 0;
+			const current = materialRef.current.opacity ?? 0;
+			// Lerp amortiguado dependiente de delta
+			const k = 1 - Math.pow(0.0001, delta * FADE_SPEED);
+			materialRef.current.opacity = MathUtils.lerp(current, target, k);
 		}
 	});
 
-	// Sin animación de entrada: posición inicial en 0
+	// Estado inicial
 	useEffect(() => {
 		if (groupRef.current) {
 			groupRef.current.position.y = 0;
+		}
+		if (materialRef.current) {
+			materialRef.current.opacity = 0; // empezar invisible; aparecerá si visible=true
 		}
 	}, []);
 
@@ -42,11 +51,13 @@ const Stars = ({ visible = true, ...props }) => {
 				frustumCulled
 				{...props}>
 				<PointMaterial
+					ref={materialRef}
 					transparent
 					color='#f272c8'
 					size={0.002}
 					sizeAttenuation={true}
 					depthWrite={false}
+					opacity={0}
 				/>
 			</Points>
 		</group>
@@ -60,9 +71,10 @@ const StarsCanvas = ({ sectionIndex = 0 }) => {
 	const suspendedByAbove = suspendAboveOf !== null && sectionIndex < suspendAboveOf;
 	const suspended = suspendedByExclusive || suspendedByAbove;
 
-	// Intersection-driven visibility, but keep mounted during exit animation
+	// Intersección del viewport y control de montaje/desmontaje
 	const [isIntersecting, setIsIntersecting] = useState(false);
 	const [visibleLocal, setVisibleLocal] = useState(false);
+	const [shouldRender, setShouldRender] = useState(false);
 	const containerRef = useRef(null);
 	const timeoutRef = useRef();
 
@@ -80,38 +92,44 @@ const StarsCanvas = ({ sectionIndex = 0 }) => {
 	}, []);
 
 	useEffect(() => {
-		// Si está suspendido globalmente, ocultar visualmente
+		// Si está suspendido globalmente, desmontar inmediatamente
 		if (suspended) {
 			setVisibleLocal(false);
+			setShouldRender(false);
 			return;
 		}
 
-		// Lógica de intersección: solo visibilidad, nunca desmontar
 		if (isIntersecting) {
+			// Montar Canvas y activar visibilidad con un leve delay
+			setShouldRender(true);
 			clearTimeout(timeoutRef.current);
 			timeoutRef.current = setTimeout(() => setVisibleLocal(true), 50);
 		} else {
+			// Ocultar (fade-out) y desmontar para liberar recursos
 			setVisibleLocal(false);
+			clearTimeout(timeoutRef.current);
+			// Dar tiempo al fade-out antes de desmontar el Canvas
+			timeoutRef.current = setTimeout(() => setShouldRender(false), 650);
 		}
 
 		return () => clearTimeout(timeoutRef.current);
 	}, [isIntersecting, suspended]);
 
-	// El canvas siempre está montado, solo cambia la visibilidad
-
 	return (
 		<div ref={containerRef} className='w-full h-auto absolute inset-0 z-[-1] pointer-events-none'>
-			<Canvas
-				camera={{ position: [0, 0, 1] }}
-				dpr={[1, 1.15]}
-				gl={{ powerPreference: 'high-performance', antialias: false }}
-			>
-				<Suspense fallback={null}>
-					<Stars visible={visibleLocal} />
-				</Suspense>
-				<AdaptiveDpr pixelated />
-				<Preload all />
-			</Canvas>
+			{shouldRender ? (
+				<Canvas
+					camera={{ position: [0, 0, 1] }}
+					dpr={[1, 1.15]}
+					gl={{ powerPreference: 'high-performance', antialias: false }}
+				>
+					<Suspense fallback={null}>
+						<Stars visible={visibleLocal} />
+					</Suspense>
+					<AdaptiveDpr pixelated />
+					<Preload all />
+				</Canvas>
+			) : null}
 		</div>
 	);
 };

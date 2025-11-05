@@ -24,13 +24,13 @@ import { useLanguage } from "../context/LanguageContext";
 import Typewriter from "./Typewriter";
 
 const pickType = (name) => {
-	const n = (name || "").toLowerCase();
-	if (n.includes("frontend") || n.includes("ux") || n.includes("design")) return "electric";
-	if (n.includes("backend") || n.includes("api")) return "steel";
-	if (n.includes("architecture")) return "psychic";
-	if (n.includes("automat") || n.includes("automation") || n.includes("ai")) return "dark";
-	if (n.includes("custom") || n.includes("plataforma") || n.includes("platform")) return "normal";
-	return "fighting";
+  const n = (name || "").toLowerCase();
+  if (n.includes("frontend") || n.includes("ux") || n.includes("design")) return "electric";
+  if (n.includes("backend") || n.includes("api")) return "steel";
+  if (n.includes("architecture")) return "psychic";
+  if (n.includes("automat") || n.includes("automation") || n.includes("ai")) return "dark";
+  if (n.includes("custom") || n.includes("plataforma") || n.includes("platform")) return "normal";
+  return "fighting";
 };
 
 const pokemonImages = [
@@ -61,6 +61,25 @@ const ProjectCard = ({ index, name, description, highlights, icon }) => {
 	const [flipped, setFlipped] = useState(false);
 	// Detectar si es móvil/touch
 	const [isTouch, setIsTouch] = useState(false);
+	// iOS gyro permission request guard
+	const gyroAskRef = useRef(false);
+	const requestGyroPermission = () => {
+		if (gyroAskRef.current) return;
+		gyroAskRef.current = true;
+		try {
+			const anyWin = window;
+			const dm = anyWin.DeviceMotionEvent;
+			const dor = anyWin.DeviceOrientationEvent;
+			if (dm && typeof dm.requestPermission === 'function') {
+				dm.requestPermission().catch(() => {}).finally(() => {});
+			}
+			if (dor && typeof dor.requestPermission === 'function') {
+				dor.requestPermission().catch(() => {}).finally(() => {});
+			}
+		} catch (e) {
+			// ignore
+		}
+	};
 	useEffect(() => {
 		const checkTouch = () => {
 			setIsTouch(('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
@@ -221,6 +240,11 @@ const ProjectCard = ({ index, name, description, highlights, icon }) => {
 					max: 45,
 					scale: 1,
 					speed: 450,
+					gyroscope: true,
+					gyroscopeMinAngleX: -15,
+					gyroscopeMaxAngleX: 15,
+					gyroscopeMinAngleY: -15,
+					gyroscopeMaxAngleY: 15,
 				}}>
 				{/* Área de hover fija - wrapper estable */}
 				<div 
@@ -229,12 +253,13 @@ const ProjectCard = ({ index, name, description, highlights, icon }) => {
 					onTouchMove={isTouch ? handlePointer : undefined}
 					onMouseEnter={isTouch ? undefined : handleEnter}
 					onMouseLeave={isTouch ? undefined : handleLeave}
-					onTouchStart={isTouch ? undefined : handleEnter}
-					onTouchEnd={isTouch ? undefined : handleLeave}
+						onTouchStart={(e) => { if (isTouch) { requestGyroPermission(); } else { handleEnter(e); } }}
+						onTouchEnd={(e) => { if (!isTouch) { handleLeave(e); } }}
 					className='w-full h-[620px] relative'>
 					<div 
-						className={`tcg-flip-container ${flipped ? 'is-flipped' : ''}`}
-						onClick={() => setFlipped((v) => !v)}
+							className={`tcg-flip-container touch-clean ${flipped ? 'is-flipped' : ''}`}
+							onClick={(e) => { if (!isTouch) { setFlipped((v) => !v); } }}
+							onTouchEnd={(e) => { if (isTouch) { e.preventDefault(); e.stopPropagation(); setFlipped((v)=>!v); } }}
 						onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setFlipped((v) => !v); } }}
 						role='button'
 						tabIndex={0}>
@@ -251,6 +276,7 @@ const ProjectCard = ({ index, name, description, highlights, icon }) => {
 							delay: (index % 3) * 0.2,
 							repeatDelay: 0.25,
 						} : {}}>
+						{/* Nota: en móvil el flip se maneja por onTouchEnd del contenedor */}
 						{/* Holo overlay */}
 						<div className='holo-overlay' />
 						
@@ -376,6 +402,7 @@ const ProjectCard = ({ index, name, description, highlights, icon }) => {
 					{/* BACK CARD */}
 					<motion.div
 						className={`tcg-card tcg-flip-face tcg-flip-face--back holo-card rounded-2xl w-full shadow-card h-[620px] flex flex-col group theme-${theme} will-change-transform overflow-hidden`}>
+						{/* Nota: en móvil el flip se maneja por onTouchEnd del contenedor */}
 						{/* Holo overlay */}
 						<div className='holo-overlay' />
 						
@@ -512,7 +539,7 @@ const Works = () => {
 
 	return (
 			<>
-				<motion.div variants={textVariant()} className='px-4 sm:px-0'>
+				<motion.div variants={textVariant()} className='px-4 sm:px-0 -mt-12 md:mt-0'>
 				<p className={styles.sectionSubText}><Typewriter content={t("works.subtitle")} speed={26} startDelay={60} /></p>
 				<h2 className={styles.sectionHeadText}><Typewriter content={t("works.title")} speed={26} startDelay={120} /></h2>
 			</motion.div>
@@ -525,7 +552,7 @@ const Works = () => {
 					<Typewriter rich content={t("works.description")} speed={22} startDelay={180} />
 				</motion.p>
 			</div>
-			<div className='mt-20 flex flex-wrap gap-16 sm:gap-12 justify-center items-stretch'>
+			<div className='mt-10 sm:mt-6 md:mt-20 flex flex-wrap gap-16 sm:gap-12 justify-center items-stretch'>
 				{servicesShowcase.map((service, index) => {
 					const localized =
 						service.translations[language] ?? service.translations.en;
