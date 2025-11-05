@@ -59,6 +59,16 @@ const ProjectCard = ({ index, name, description, highlights, icon }) => {
 	const hoverAreaRef = useRef(null);
 	const [inView, setInView] = useState(false);
 	const [flipped, setFlipped] = useState(false);
+	// Detectar si es móvil/touch
+	const [isTouch, setIsTouch] = useState(false);
+	useEffect(() => {
+		const checkTouch = () => {
+			setIsTouch(('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
+		};
+		checkTouch();
+		window.addEventListener('resize', checkTouch);
+		return () => window.removeEventListener('resize', checkTouch);
+	}, []);
 	const [isHovering, setIsHovering] = useState(false);
 	const hoverTimeoutRef = useRef(null);
 	const type = pickType(name);
@@ -215,12 +225,12 @@ const ProjectCard = ({ index, name, description, highlights, icon }) => {
 				{/* Área de hover fija - wrapper estable */}
 				<div 
 					ref={hoverAreaRef}
-					onMouseMove={handlePointer}
-					onTouchMove={handlePointer}
-					onMouseEnter={handleEnter}
-					onMouseLeave={handleLeave}
-					onTouchStart={handleEnter}
-					onTouchEnd={handleLeave}
+					onMouseMove={isTouch ? undefined : handlePointer}
+					onTouchMove={isTouch ? handlePointer : undefined}
+					onMouseEnter={isTouch ? undefined : handleEnter}
+					onMouseLeave={isTouch ? undefined : handleLeave}
+					onTouchStart={isTouch ? undefined : handleEnter}
+					onTouchEnd={isTouch ? undefined : handleLeave}
 					className='w-full h-[620px] relative'>
 					<div 
 						className={`tcg-flip-container ${flipped ? 'is-flipped' : ''}`}

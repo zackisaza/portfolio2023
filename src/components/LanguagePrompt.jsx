@@ -286,7 +286,7 @@ const LanguagePrompt = () => {
 					<motion.div
 						onClick={handleModalClick}
 						onTouchStart={handleModalClick}
-						className='relative w-[calc(100%-2rem)] max-w-sm md:max-w-md lg:max-w-lg rounded-3xl bg-white-100 shadow-2xl px-8 py-10 text-center space-y-6 border border-black-100/10 cursor-pointer overflow-hidden'
+						className='relative w-[calc(100%-2rem)] max-w-sm md:max-w-md lg:max-w-lg rounded-3xl bg-white-100 shadow-2xl px-8 py-10 text-center space-y-6 border border-black-100/10 cursor-pointer overflow-hidden language-modal-responsive'
 						animate={{
 							y: language === 'es' ? -40 : 0,
 							transition: {
