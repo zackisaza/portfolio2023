@@ -1,296 +1,258 @@
-import { useEffect, useRef, useState, lazy, Suspense } from "react";
-import { Tilt } from "react-tilt";
-const BallCanvasLazy = lazy(() => import("./canvas/Ball"));
-import { SectionWrapper } from "../hoc";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { technologies } from "../constants";
-import { motion, useReducedMotion } from "framer-motion";
-import { textVariant } from "../utils/motion";
-import { styles } from "../styles";
 import { useLanguage } from "../context/LanguageContext";
-import Typewriter from "./Typewriter";
-import { useCanvasBudget } from "../context/CanvasBudgetContext";
-import { typeWater, typeFairy } from "../assets";
+import "./sushiroom.css";
 
-const VisibilityBall = ({ technology, sectionInView, language }) => {
-	const containerRef = useRef(null);
-	const [isIntersecting, setIsIntersecting] = useState(false);
-	const [shouldRender, setShouldRender] = useState(false);
-	const [visibleLocal, setVisibleLocal] = useState(false);
-	const timeoutRef = useRef();
-		const deltaRef = useRef({ mx: 0, my: 0, t: 0 });
-		const lastPosRef = useRef({ x: 0, y: 0, set: false });
-		// No slot limiting: render all balls when visible
+// Tech list: some icons come bundled from the `technologies` constant, the rest
+// from public/tech-icons/*.svg.
+const CONST = Object.fromEntries(technologies.map((tech) => [tech.id, tech]));
+const c = (id) => {
+	const tech = CONST[id];
+	return tech ? { key: id, name: tech.name.en, icon: tech.icon } : null;
+};
+const p = (key, name, file) => ({ key, name, icon: `/tech-icons/${file}.svg` });
 
-	useEffect(() => {
-		if (!sectionInView) {
-			// when section is not in view, start hiding
-			setIsIntersecting(false);
-			return undefined;
-		}
+const TECHS = [
+	c("react"), c("nextjs"), c("typescript"), c("javascript"), c("tailwind"), c("redux"),
+	p("vite", "Vite", "vite"), p("framer", "Framer Motion", "framer"), p("pwa", "PWA", "pwa"),
+	c("node"), c("python"), c("django"),
+	p("nestjs", "NestJS", "nestjs"), p("express", "Express", "express"), p("fastapi", "FastAPI", "fastapi"),
+	p("laravel", "Laravel", "laravel"), p("graphql", "GraphQL", "graphql"),
+	c("aws"), c("docker"), c("kubernetes"),
+	p("githubactions", "GitHub Actions", "githubactions"), p("terraform", "Terraform", "terraform"),
+	p("nginx", "Nginx", "nginx"), p("grafana", "Grafana", "grafana"), p("serverless", "Serverless", "serverless"),
+	c("mongodb"), c("postgrest"),
+	p("postgresql", "PostgreSQL", "postgresql"), p("mysql", "MySQL", "mysql"), p("redis", "Redis", "redis"), p("kafka", "Kafka", "kafka"),
+].filter(Boolean);
 
-		const node = containerRef.current;
-		if (!node) return undefined;
+// The pen's original sushi variants (class names per plate).
+const SUSHI = [
+	["rice", "salmon", "seaweed"],
+	["rice", "salmon", "seaweed3"],
+	["rice2", "rice3", "rice4"],
+	["rice", "tuna", "seaweed"],
+	["rice", "roe", "seaweed2"],
+];
 
-		const observer = new IntersectionObserver(
-			([entry]) => {
-				setIsIntersecting(entry.isIntersecting);
-			},
-			{
-				root: null,
-				rootMargin: "200px",
-				threshold: 0.2,
-			}
-		);
+const BLURBS = {
+	react: { en: "Library for building component-based UIs.", es: "Librería para construir UIs por componentes." },
+	nextjs: { en: "React framework with SSR, routing & more.", es: "Framework de React con SSR, routing y más." },
+	typescript: { en: "Typed JavaScript that scales.", es: "JavaScript tipado que escala." },
+	javascript: { en: "The language of the web.", es: "El lenguaje de la web." },
+	tailwind: { en: "Utility-first CSS framework.", es: "Framework CSS utility-first." },
+	redux: { en: "Predictable state management.", es: "Manejo de estado predecible." },
+	vite: { en: "Lightning-fast build tool & dev server.", es: "Build tool y dev server ultrarrápido." },
+	framer: { en: "Declarative animations for React.", es: "Animaciones declarativas para React." },
+	pwa: { en: "Installable, offline-capable web apps.", es: "Apps web instalables y offline." },
+	node: { en: "JavaScript runtime for servers.", es: "Runtime de JavaScript en el servidor." },
+	python: { en: "Versatile language for backend & AI.", es: "Lenguaje versátil para backend e IA." },
+	django: { en: "Batteries-included Python web framework.", es: "Framework web de Python muy completo." },
+	nestjs: { en: "Structured, scalable Node.js framework.", es: "Framework de Node.js estructurado y escalable." },
+	express: { en: "Minimal, fast Node.js web framework.", es: "Framework web minimal y rápido de Node.js." },
+	fastapi: { en: "High-performance Python APIs.", es: "APIs de Python de alto rendimiento." },
+	laravel: { en: "Elegant PHP web framework.", es: "Framework web elegante de PHP." },
+	graphql: { en: "Ask APIs for exactly what you need.", es: "APIs que devuelven justo lo que pedís." },
+	aws: { en: "Cloud infrastructure at scale.", es: "Infraestructura cloud a escala." },
+	docker: { en: "Containerize apps to run anywhere.", es: "Contenedores para correr en cualquier lado." },
+	kubernetes: { en: "Orchestrate containers at scale.", es: "Orquestación de contenedores a escala." },
+	githubactions: { en: "CI/CD pipelines right in your repo.", es: "Pipelines CI/CD dentro de tu repo." },
+	terraform: { en: "Infrastructure as code.", es: "Infraestructura como código." },
+	nginx: { en: "High-performance web server & proxy.", es: "Servidor web y proxy de alto rendimiento." },
+	grafana: { en: "Dashboards & observability.", es: "Dashboards y observabilidad." },
+	serverless: { en: "Run code without managing servers.", es: "Código sin gestionar servidores." },
+	mongodb: { en: "Flexible NoSQL document database.", es: "Base NoSQL de documentos flexible." },
+	postgrest: { en: "Instant REST API from your Postgres schema.", es: "API REST instantánea desde tu esquema Postgres." },
+	postgresql: { en: "Powerful open-source relational DB.", es: "Base relacional open-source potente." },
+	mysql: { en: "Popular relational database.", es: "Base de datos relacional popular." },
+	redis: { en: "In-memory data store & cache.", es: "Store en memoria y caché." },
+	kafka: { en: "Distributed event streaming.", es: "Streaming de eventos distribuido." },
+};
+const blurbFor = (key) => BLURBS[key] ?? null;
 
-		observer.observe(node);
-		return () => observer.unobserve(node);
-	}, [sectionInView]);
+const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
-	// manage mount/visibility so BallCanvas can animate exit
-	useEffect(() => {
-		if (isIntersecting) {
-			if (!shouldRender) {
-				setShouldRender(true);
-				clearTimeout(timeoutRef.current);
-				timeoutRef.current = setTimeout(() => setVisibleLocal(true), 50);
-			} else {
-				setVisibleLocal(true);
-			}
-			return;
-		}
-
-		if (shouldRender) {
-			setVisibleLocal(false);
-			clearTimeout(timeoutRef.current);
-			timeoutRef.current = setTimeout(() => setShouldRender(false), 600);
-		}
-
-		return () => clearTimeout(timeoutRef.current);
-	}, [isIntersecting, shouldRender]);
-
-	// label intentionally omitted to avoid rendering static alt placeholders when hidden
-
-	const onMouseEnter = (e) => {
-		lastPosRef.current = { x: e.clientX, y: e.clientY, set: true };
-	};
-	const onMouseMove = (e) => {
-		let mx = e.movementX;
-		let my = e.movementY;
-		if (mx === undefined || my === undefined) {
-			if (!lastPosRef.current.set) {
-				lastPosRef.current = { x: e.clientX, y: e.clientY, set: true };
-				return;
-			}
-			mx = e.clientX - lastPosRef.current.x;
-			my = e.clientY - lastPosRef.current.y;
-			lastPosRef.current = { x: e.clientX, y: e.clientY, set: true };
-		}
-		deltaRef.current = { mx, my, t: performance.now() };
-	};
-	const onMouseLeave = () => {
-		lastPosRef.current = { x: 0, y: 0, set: false };
-		// Notify canvas about pointer leaving; canvas will wait 3s before returning
-		deltaRef.current = { mx: 0, my: 0, t: performance.now(), leaving: true };
-	};
-
-	return (
-		<div
-			ref={containerRef}
-			className='relative w-48 h-48 sm:w-56 sm:h-56 flex items-center justify-center overflow-visible cursor-grab active:cursor-grabbing'
-			onMouseEnter={onMouseEnter}
-			onMouseMove={onMouseMove}
-			onMouseLeave={onMouseLeave}>
-			{shouldRender ? (
-				<Suspense fallback={null}>
-					{/* Reduce the harsh white glow for tech icons: softer tint and lower multiplier */}
-					<BallCanvasLazy
-						icon={technology.icon}
-						externalDeltaRef={deltaRef}
-						emissiveColor={'#dfeeff'}
-						emissiveMultiplier={0}
-						decalRotation={[0, 0, 0]}
-						visible={visibleLocal}
-					/>
-				</Suspense>
-			) : null}
-		</div>
+// The clicked flag's on-screen rect is measured, then a card grows FROM that
+// spot (staying in place, not centred like a popup) to reveal the tech data.
+const TechDetail = ({ selected, language, onClose, onExitComplete }) => {
+	const blurb = selected ? blurbFor(selected.tech.key) : null;
+	let box = null;
+	if (selected) {
+		const r = selected.rect;
+		const vw = window.innerWidth;
+		const vh = window.innerHeight;
+		const W = Math.min(340, vw - 32);
+		const H = Math.min(320, vh - 32);
+		const left = clamp(r.left + r.width / 2 - W / 2, 12, vw - W - 12);
+		const top = clamp(r.top + r.height / 2 - H / 2, 12, vh - H - 12);
+		box = { start: r, W, H, left, top };
+	}
+	return createPortal(
+		<AnimatePresence onExitComplete={onExitComplete}>
+			{selected && box && (
+				<>
+					<motion.div className='sr-expand-back' onClick={onClose} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
+					<motion.div
+						className='sr-expand'
+						onClick={(e) => e.stopPropagation()}
+						initial={{ top: box.start.top, left: box.start.left, width: box.start.width, height: box.start.height, borderRadius: 9, opacity: 0.4 }}
+						animate={{ top: box.top, left: box.left, width: box.W, height: box.H, borderRadius: 18, opacity: 1 }}
+						exit={{ top: box.start.top, left: box.start.left, width: box.start.width, height: box.start.height, borderRadius: 9, opacity: 0 }}
+						transition={{ type: "spring", stiffness: 260, damping: 26 }}
+					>
+						<motion.div
+							className='sr-expand-inner'
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1, transition: { delay: 0.12 } }}
+							exit={{ opacity: 0, transition: { duration: 0.08 } }}
+						>
+							<button className='sr-expand-x' onClick={onClose} aria-label='Close'>×</button>
+							<div className='sr-expand-disc'>
+								<img src={selected.tech.icon} alt={selected.tech.name} />
+							</div>
+							<h3>{selected.tech.name}</h3>
+							<p>{blurb ? blurb[language] ?? blurb.en : ""}</p>
+							<span className='sr-tag'>技 · TECH</span>
+						</motion.div>
+					</motion.div>
+				</>
+			)}
+		</AnimatePresence>,
+		document.body
 	);
 };
 
-import { frontendService, backendService, architectureService } from "../assets";
-
+// Sushi room ported verbatim from CodePen rjmr/gQqaYr. The 620x400 pen scene is
+// scaled up to fill the whole section width via a transform on `.world`. The
+// original 5 animated plates are replaced by a seamless kaiten conveyor of the
+// full tech stack — each sushi carries a pick-flag with its logo.
 const Tech = () => {
-	const sectionRef = useRef(null);
-	const [sectionInView, setSectionInView] = useState(false);
 	const { t, language } = useLanguage();
-  const { setExclusiveSection } = useCanvasBudget();
-  const prefersReducedMotion = useReducedMotion();
+	const [selected, setSelected] = useState(null); // { id, tech }
+	const [frozen, setFrozen] = useState(false); // pause the belt while a flag is expanded
+	const worldRef = useRef(null);
+	const [scale, setScale] = useState(1);
 
 	useEffect(() => {
-		const node = sectionRef.current;
-		if (!node) return undefined;
-
-		const observer = new IntersectionObserver(
-			([entry]) => setSectionInView(entry.isIntersecting),
-			{
-				root: null,
-				rootMargin: "0px",
-				threshold: 0.4,
-			}
-		);
-
-		observer.observe(node);
-		return () => observer.unobserve(node);
+		const el = worldRef.current;
+		if (!el) return;
+		const update = () => setScale(el.clientWidth / 620);
+		update();
+		const ro = new ResizeObserver(update);
+		ro.observe(el);
+		return () => ro.disconnect();
 	}, []);
 
-	// Exclusive mode: while Tech is visible, suspend all other canvases
-	useEffect(() => {
-		if (sectionInView) setExclusiveSection(3);
-		else setExclusiveSection(null);
-	}, [sectionInView, setExclusiveSection]);
+	const open = (tech, domRect) => {
+		setFrozen(true);
+		setSelected({ tech, rect: { top: domRect.top, left: domRect.left, width: domRect.width, height: domRect.height } });
+	};
+
+	// Duplicate the list so translateX(-50%) loops without a visible jump.
+	const belt = [...TECHS, ...TECHS];
 
 	return (
-		<div className="relative -mb-12 md:mb-0">
-			<motion.div variants={textVariant()} className="relative">
-				<p className={`${styles.sectionSubText} text-black`}><Typewriter content={t("tech.subtitle")} speed={26} startDelay={60} /></p>
-				<h2 className={`${styles.sectionHeadText} text-black`}><Typewriter content={t("tech.title")} speed={26} startDelay={120} /></h2>
-				
-				{/* Pokemon Type Decorations */}
-				<motion.div 
-					className='absolute -top-8 -left-4 hidden lg:block'
-					initial={{ opacity: 0, x: -50, rotate: -90 }}
-					animate={{ opacity: 0.12, x: 0, rotate: 0 }}
-					transition={{ delay: 0.4, duration: 0.8, type: "spring" }}
-				>
-					<motion.img 
-						src={typeWater} 
-						alt='' 
-						className='w-20 h-20'
-						animate={{ 
-							rotate: [0, -8, 0, 8, 0],
-							x: [0, -3, 0, 3, 0]
-						}}
-						transition={{ 
-							duration: 5,
-							repeat: Infinity,
-							ease: "easeInOut"
-						}}
-					/>
-				</motion.div>
-				
-				<motion.div 
-					className='absolute -top-4 -right-8 hidden lg:block'
-					initial={{ opacity: 0, x: 50, rotate: 90 }}
-					animate={{ opacity: 0.12, x: 0, rotate: 0 }}
-					transition={{ delay: 0.6, duration: 0.8, type: "spring" }}
-				>
-					<motion.img 
-						src={typeFairy} 
-						alt='' 
-						className='w-16 h-16'
-						animate={{ 
-							rotate: [0, 12, 0, -12, 0],
-							scale: [1, 1.05, 1, 1.05, 1]
-						}}
-						transition={{ 
-							duration: 4.5,
-							repeat: Infinity,
-							ease: "easeInOut",
-							delay: 0.5
-						}}
-					/>
-				</motion.div>
-			</motion.div>
+		<section className='relative z-0 w-full'>
+			<span className='hash-span' id='tech'>&nbsp;</span>
 
-			<div
-				ref={sectionRef}
-				className='mt-[50px] mb-20 lg:mb-32 flex flex-wrap justify-center gap-8 sm:gap-10'>
-				{technologies.slice(-7).map((technology) => (
-					<VisibilityBall
-						key={technology.id}
-						technology={technology}
-						sectionInView={sectionInView}
-						language={language}
-					/>
-				))}
+			<div className='tech-sign-wrap'>
+				<div className='tech-noren'>
+					<span className='tech-seal' aria-hidden='true'>匠</span>
+					<p className='tech-sub'>{t("tech.subtitle")}</p>
+					<h2 className='tech-title'>{t("tech.title")}</h2>
+					<span className='tech-kanji' aria-hidden='true'>技術・寿司</span>
+				</div>
 			</div>
 
-			{/* Stack details: front / back / architecture — cards animation refined for stability */}
-			<motion.div
-				className='mt-14 px-6 md:px-8 w-full max-w-5xl mx-auto'
-				initial={{ y: 8 }}
-				whileInView={{ y: 0 }}
-				viewport={{ once: true, amount: 0.25 }}
-				transition={{ duration: 0.6, ease: "easeOut" }}
-			>
-				<div className='grid grid-cols-1 md:grid-cols-3 gap-y-12 md:gap-6 items-stretch'>
-					{[
-						{ key: 'front', img: frontendService, title: t('tech.frontTitle'), descKey: 'tech.frontDesc' },
-						{ key: 'back', img: backendService, title: t('tech.backTitle'), descKey: 'tech.backDesc' },
-						{ key: 'arch', img: architectureService, title: t('tech.architectureTitle'), descKey: 'tech.architectureDesc' },
-					].map((col, idx) => {
-						const raw = t(col.descKey) || '';
-						const items = raw
-							.split(/,\s*/)
-							.filter(Boolean)
-							.map((it) => {
-								const trimmed = it.trim();
-								return trimmed.replace(/^(^[^\p{L}]*)(\p{L})/u, (m, p1, p2) => p1 + p2.toUpperCase());
-							});
+			<div className='sushi-world' ref={worldRef} style={{ height: `${400 * scale}px` }}>
+				<div className='world' style={{ transform: `scale(${scale})` }}>
+					<div className='room'>
+						<div className='lantern'>
+							<span><a>光</a></span>
+							<span><a>金</a></span>
+							<span><a>光</a></span>
+							<span><a>金</a></span>
+						</div>
+						<div className='windows'>
+							<span />
+							<span />
+							<span />
+						</div>
+						<div className='panel'>
+							<span />
+							<span />
+							<span />
+							<span />
+							<span />
+							<span />
+							<span />
+							<span />
+							<span />
+							<span />
+						</div>
+						<div className='tabletop' />
+						<div className='table' />
+						<div className='cup'>
+							<span />
+							<span />
+							<span />
+						</div>
+						<div className='chopsticks' />
 
-						// Wrapper: animate in once when in view; avoid oscillation on scroll
-						const ScrollFade = ({ children }) => (
-							<motion.div
-								initial={{ opacity: 1, y: 14 }}
-								whileInView={{ y: 0 }}
-								viewport={{ once: true, amount: 0.35, margin: "-10% 0px -10% 0px" }}
-								transition={{ type: "tween", duration: 0.45, delay: idx * 0.12, ease: "easeOut" }}
-							>
-								{children}
-							</motion.div>
-						);
+						<div className='plate'>
+							<span />
+							<span />
+							<span />
+							<span />
+							<span />
+							<span />
+							<span />
+						</div>
+						<div className='wasabi-pot' />
+						<div className='chopstick-pot' />
 
-						return (
-							<ScrollFade key={col.key}>
-								<Tilt
-									className='w-full h-full'
-									options={{ max: prefersReducedMotion ? 0 : 12, scale: 1, speed: 600, glare: false, perspective: 900 }}
-								>
-									<motion.div
-										className='w-full h-full min-h-[300px] md:min-h-[320px] bg-gradient-to-r from-[#45070e] via-[#6a0e1c] to-[#45070e] p-[1px] rounded-[20px] shadow-card overflow-hidden will-change-transform'
-										initial={false}
-										whileHover={prefersReducedMotion ? {} : { y: -4, scale: 1.02 }}
-										whileTap={prefersReducedMotion ? {} : { scale: 0.995 }}
-										transition={{ duration: 0.25, ease: "easeOut" }}
+						<div className='chopsticks2' />
+						<div className='chopsticks3' />
+						<div className='wasabi' />
+						<div className='belt' />
+
+						<div className='kaiten'>
+							<div className='sushiplate kaiten-track' style={frozen ? { animationPlayState: "paused" } : undefined}>
+								{belt.map((tech, i) => (
+									<div
+										className='kaiten-plate'
+										key={`${tech.key}-${i}`}
+										onClick={(e) => {
+											const flag = e.currentTarget.querySelector(".kaiten-flag");
+											open(tech, (flag || e.currentTarget).getBoundingClientRect());
+										}}
+										title={tech.name}
 									>
-										<div className='bg-[#1a0000] rounded-[20px] py-6 px-8 h-full flex flex-col justify-start gap-6'>
-											<div className='flex flex-col items-center gap-4 text-center'>
-												{col.img ? (
-													<img
-														src={col.img}
-														alt={col.title}
-														className='w-16 h-16 object-contain drop-shadow-[0_8px_18px_rgba(0,0,0,0.25)]'
-													/>
-												) : null}
-												<h3 className='text-white-200 text-[18px] font-semibold leading-snug'>
-													{col.title}
-												</h3>
-											</div>
-											<ul className='text-secondary text-base md:text-sm leading-relaxed list-disc list-inside space-y-2'>
-												{items.map((it, i) => (
-													<li key={i} className='text-left'>{it}</li>
-												))}
-											</ul>
+										<div className='kaiten-pick' aria-hidden='true' />
+										<div className='kaiten-flag'>
+											<img src={tech.icon} alt={tech.name} loading='lazy' />
+											<div className='sr-name'>{tech.name}</div>
 										</div>
-									</motion.div>
-								</Tilt>
-							</ScrollFade>
-						);
-					})}
+										{SUSHI[i % SUSHI.length].map((cls, j) => (
+											<div key={j} className={cls} />
+										))}
+									</div>
+								))}
+							</div>
+						</div>
+					</div>
 				</div>
-			</motion.div>
-		</div>
+			</div>
+
+			<TechDetail
+				selected={selected}
+				language={language}
+				onClose={() => setSelected(null)}
+				onExitComplete={() => setFrozen(false)}
+			/>
+		</section>
 	);
 };
 
-export default SectionWrapper(Tech, "tech");
+export default Tech;

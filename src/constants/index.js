@@ -34,6 +34,13 @@ export const navLinks = [
         },
     },
     {
+        id: "projects",
+        title: {
+            en: "Projects",
+            es: "Proyectos",
+        },
+    },
+    {
         id: "experience",
         title: {
             en: "Experience",
@@ -585,4 +592,190 @@ const servicesShowcase = [
     },
 ];
 
-export { services, technologies, experiences, servicesShowcase };
+// Real, shippable projects — ordered to lead with the strongest sales cases.
+const projects = [
+    {
+        id: "project-managerpyme",
+        image: "/projects/managerpyme.webp",
+        status: "production", // "production" | "opensource" | "client"
+        liveUrl: "https://managerpyme.com",
+        repoUrl: null,
+        repoPrivate: true,
+        tags: ["Laravel", "PHP", "MySQL", "Docker", "Nginx", "AI"],
+        metrics: [
+            { value: "50+", label: { en: "Active clients", es: "Clientes activos" } },
+            { value: "SaaS", label: { en: "Multi-tenant", es: "Multi-tenant" } },
+        ],
+        translations: {
+            en: {
+                name: "ManagerPyme",
+                tagline: "Accounting & POS SaaS with DIAN electronic invoicing",
+                description:
+                    "Colombia's most complete <b>DIAN electronic-invoicing</b> SaaS, built on top of an ERP/POS base. I engineered the <b>fiscal localization</b>, an <b>AI assistance</b> module, a full <b>CMS/landing</b> redesign, dockerized the stack, and took it to production as a <b>multi-tenant SaaS with 50+ active clients</b>.",
+                highlights: [
+                    "DIAN electronic invoicing & fiscal localization",
+                    "Multi-tenant SaaS with 50+ active clients",
+                    "AI assistance module & full CMS/landing redesign",
+                ],
+            },
+            es: {
+                name: "ManagerPyme",
+                tagline: "SaaS contable y POS con facturación electrónica DIAN",
+                description:
+                    "El SaaS de <b>facturación electrónica DIAN</b> más completo de Colombia, construido sobre una base ERP/POS. Desarrollé la <b>localización fiscal</b>, un módulo de <b>asistencia con IA</b>, el rediseño completo del <b>CMS/landing</b>, dockericé el stack y lo llevé a producción como <b>SaaS multi-tenant con 50+ clientes activos</b>.",
+                highlights: [
+                    "Facturación electrónica DIAN y localización fiscal",
+                    "SaaS multi-tenant con 50+ clientes activos",
+                    "Módulo de asistencia con IA y rediseño completo de CMS/landing",
+                ],
+            },
+        },
+    },
+    {
+        id: "project-destino-cordillera",
+        image: "/projects/destino-cordillera.webp",
+        status: "production",
+        liveUrl: "https://destinocordillera.com",
+        repoUrl: null,
+        repoPrivate: true,
+        tags: ["Next.js", "FastAPI", "Python", "PostgreSQL", "DeepFace", "AWS", "Docker", "CI/CD"],
+        metrics: [
+            { value: "AI", label: { en: "Facial recognition", es: "Reconocimiento facial" } },
+            { value: "CI/CD", label: { en: "GitHub Actions", es: "GitHub Actions" } },
+        ],
+        translations: {
+            en: {
+                name: "Destino Cordillera",
+                tagline: "Photo-park platform with facial recognition (AI)",
+                description:
+                    "Full-stack platform and website for a photo park. <b>Next.js</b> frontend, <b>FastAPI</b> backend and <b>PostgreSQL</b>, with <b>DeepFace</b> facial recognition to match each visitor with their photos. Dockerized and deployed on <b>AWS Lightsail</b> with a full <b>GitHub Actions CI/CD</b> pipeline publishing images to GHCR.",
+                highlights: [
+                    "DeepFace facial recognition to match visitors with photos",
+                    "FastAPI + PostgreSQL backend, static Next.js frontend",
+                    "CI/CD to AWS Lightsail via GitHub Actions (GHCR)",
+                ],
+            },
+            es: {
+                name: "Destino Cordillera",
+                tagline: "Plataforma de parque fotográfico con reconocimiento facial (IA)",
+                description:
+                    "Plataforma full-stack y sitio web para un parque fotográfico. Frontend <b>Next.js</b>, backend <b>FastAPI</b> y <b>PostgreSQL</b>, con reconocimiento facial <b>DeepFace</b> para emparejar a cada visitante con sus fotos. Dockerizado y desplegado en <b>AWS Lightsail</b> con un pipeline completo de <b>CI/CD por GitHub Actions</b> que publica imágenes en GHCR.",
+                highlights: [
+                    "Reconocimiento facial DeepFace para emparejar visitantes con fotos",
+                    "Backend FastAPI + PostgreSQL, frontend estático Next.js",
+                    "CI/CD a AWS Lightsail vía GitHub Actions (GHCR)",
+                ],
+            },
+        },
+    },
+    {
+        id: "project-los-encargos-de-caro",
+        image: "/projects/los-encargos-de-caro.webp",
+        status: "production",
+        liveUrl: "https://losencargosdekaro.systemlife.com.co",
+        repoUrl: null,
+        repoPrivate: true,
+        tags: ["Laravel", "PHP 8.2", "Filament 4", "MySQL", "Docker", "Nginx"],
+        metrics: [
+            { value: "Filament", label: { en: "Admin panel", es: "Panel admin" } },
+        ],
+        translations: {
+            en: {
+                name: "Los Encargos de Caro",
+                tagline: "Sales & orders management app",
+                description:
+                    "Sales and orders management app built with <b>Laravel</b> and a <b>Filament 4</b> admin panel, with <b>PDF generation</b> and a dockerized <b>Nginx + MySQL</b> stack deployed to production.",
+                highlights: [
+                    "Laravel + Filament 4 admin panel",
+                    "PDF generation (dompdf)",
+                    "Dockerized Nginx + MySQL production deploy",
+                ],
+            },
+            es: {
+                name: "Los Encargos de Caro",
+                tagline: "App de gestión de ventas y encargos",
+                description:
+                    "App de gestión de ventas y encargos construida con <b>Laravel</b> y un panel de administración <b>Filament 4</b>, con <b>generación de PDF</b> y un stack dockerizado <b>Nginx + MySQL</b> desplegado en producción.",
+                highlights: [
+                    "Panel de administración Laravel + Filament 4",
+                    "Generación de PDF (dompdf)",
+                    "Despliegue en producción dockerizado con Nginx + MySQL",
+                ],
+            },
+        },
+    },
+    {
+        id: "project-larapark",
+        image: "/projects/larapark.webp",
+        status: "opensource",
+        liveUrl: null,
+        repoUrl: "https://github.com/zackisaza/gestor-de-parqueaderos-con-laravel",
+        repoPrivate: false,
+        tags: ["Laravel", "Tailwind", "JavaScript", "Vite"],
+        metrics: [
+            { value: "OSS", label: { en: "Open source", es: "Código abierto" } },
+        ],
+        translations: {
+            en: {
+                name: "Larapark",
+                tagline: "Free parking-lot management system",
+                description:
+                    "Open-source app to manage parking lots efficiently, built with <b>Laravel</b>, <b>Tailwind</b> and <b>Vite</b>. Free and public on GitHub.",
+                highlights: [
+                    "Parking operations management",
+                    "Laravel + Tailwind UI",
+                    "Open source & free to use",
+                ],
+            },
+            es: {
+                name: "Larapark",
+                tagline: "Sistema gratuito de gestión de parqueaderos",
+                description:
+                    "App de código abierto para gestionar parqueaderos de forma eficiente, construida con <b>Laravel</b>, <b>Tailwind</b> y <b>Vite</b>. Gratuita y pública en GitHub.",
+                highlights: [
+                    "Gestión de operaciones de parqueadero",
+                    "UI con Laravel + Tailwind",
+                    "Código abierto y de uso gratuito",
+                ],
+            },
+        },
+    },
+    {
+        id: "project-generador-poemas",
+        image: "/projects/generador-poemas.webp",
+        status: "client",
+        liveUrl: "https://zackisaza.github.io/generador-poemas/",
+        repoUrl: "https://github.com/zackisaza/generador-poemas",
+        repoPrivate: false,
+        tags: ["HTML", "CSS", "JavaScript", "Canvas"],
+        metrics: [
+            { value: "0", label: { en: "Build step", es: "Sin build" } },
+        ],
+        translations: {
+            en: {
+                name: "Poem Instagrammer",
+                tagline: "Browser canvas studio: poems → Instagram-ready images",
+                description:
+                    "Zero-build, no-backend studio that renders poems into <b>Instagram-ready images</b> entirely in <code>&lt;canvas&gt;</code>: 4 aspect ratios, 8 themes, markdown formatting and localStorage state. Built for a client (@sr.zrro).",
+                highlights: [
+                    "Full render pipeline in the browser canvas",
+                    "4 ratios, 8 themes, markdown formatting",
+                    "No build, no backend — pure HTML/CSS/JS",
+                ],
+            },
+            es: {
+                name: "Instagrameador de Poemas",
+                tagline: "Estudio en canvas: poemas → imágenes listas para Instagram",
+                description:
+                    "Estudio sin build ni backend que convierte poemas en <b>imágenes listas para Instagram</b> renderizando todo en <code>&lt;canvas&gt;</code>: 4 proporciones, 8 temas, formato markdown y estado en localStorage. Hecho para un cliente (@sr.zrro).",
+                highlights: [
+                    "Pipeline de render completo en el canvas del navegador",
+                    "4 proporciones, 8 temas, formato markdown",
+                    "Sin build ni backend — HTML/CSS/JS puro",
+                ],
+            },
+        },
+    },
+];
+
+export { services, technologies, experiences, servicesShowcase, projects };

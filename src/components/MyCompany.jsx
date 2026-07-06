@@ -101,6 +101,31 @@ const WolfcaveBall = () => {
 		deltaRef.current = { mx: 0, my: 0, t: performance.now(), leaving: true };
 	};
 
+	// Touch handlers for mobile (single-touch only)
+	const onTouchStart = (e) => {
+		if (!e.touches || e.touches.length === 0) return;
+		const t0 = e.touches[0];
+		lastPosRef.current = { x: t0.clientX, y: t0.clientY, set: true };
+	};
+
+	const onTouchMove = (e) => {
+		if (!e.touches || e.touches.length === 0) return;
+		const t0 = e.touches[0];
+		if (!lastPosRef.current.set) {
+			lastPosRef.current = { x: t0.clientX, y: t0.clientY, set: true };
+			return;
+		}
+		const mx = t0.clientX - lastPosRef.current.x;
+		const my = t0.clientY - lastPosRef.current.y;
+		lastPosRef.current = { x: t0.clientX, y: t0.clientY, set: true };
+		deltaRef.current = { mx, my, t: performance.now() };
+	};
+
+	const onTouchEnd = () => {
+		lastPosRef.current = { x: 0, y: 0, set: false };
+		deltaRef.current = { mx: 0, my: 0, t: performance.now(), leaving: true };
+	};
+
 	return (
 		<div
 			ref={containerRef}
@@ -108,6 +133,10 @@ const WolfcaveBall = () => {
 			onMouseEnter={onMouseEnter}
 			onMouseMove={onMouseMove}
 			onMouseLeave={onMouseLeave}
+			onTouchStart={onTouchStart}
+			onTouchMove={onTouchMove}
+			onTouchEnd={onTouchEnd}
+			onTouchCancel={onTouchEnd}
 		>
 					{isVisible ? (
 														<BallCanvas

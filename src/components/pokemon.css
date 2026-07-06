@@ -1,0 +1,104 @@
+/*
+ * Pokémon-themed animated backdrop for the Services (Works) section.
+ * Pure CSS + pixel sprites — no three.js. A deep battle-red base, a giant
+ * "breathing" Poké Ball watermark, a soft pulsing glow, and the WHOLE Gen-1
+ * Kanto roster drifting upward as pixel sprites (see PokemonBackground.jsx).
+ */
+
+.pokemon-bg {
+	position: relative;
+	overflow: hidden;
+	background: radial-gradient(125% 100% at 50% 0%, #ff6f5e 0%, #ef3b30 38%, #cc1a1a 72%, #9c0f12 100%);
+}
+
+/* Giant Poké Ball watermark that gently breathes — the section's signature
+   motif, distinct from the arcade's rotating rays. Built from stacked
+   gradients: red/white halves, black equator band, ring, and center button. */
+.pokemon-bg::before {
+	content: "";
+	position: absolute;
+	left: 50%;
+	top: 45%;
+	width: 82vmin;
+	height: 82vmin;
+	transform: translate(-50%, -50%);
+	border-radius: 50%;
+	background:
+		radial-gradient(circle at 50% 50%, #fff 0 7.5%, #1a1a1a 7.5% 10.6%, transparent 10.9%),
+		radial-gradient(circle at 50% 50%, transparent 0 13.8%, #1a1a1a 13.8% 16.6%, transparent 16.9%),
+		linear-gradient(#1a1a1a 0 0) 50% 50% / 100% 9% no-repeat,
+		linear-gradient(180deg, #d62d24 0 50%, #f2f2f2 50% 100%);
+	opacity: 0.1;
+	filter: blur(0.5px);
+	pointer-events: none;
+	z-index: 0;
+	animation: poke-breathe 7s ease-in-out infinite;
+}
+
+/* Soft pulsing glow blooms — warm highlight + deep-red shadow corners */
+.pokemon-bg::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	z-index: 0;
+	background:
+		radial-gradient(42% 32% at 18% 16%, rgba(255, 240, 210, 0.42), transparent 60%),
+		radial-gradient(46% 36% at 84% 82%, rgba(140, 8, 12, 0.55), transparent 60%);
+	animation: poke-bloom 8s ease-in-out infinite;
+}
+
+/* Floating pixel-Pokémon layer (spans injected by PokemonBackground.jsx) */
+.pokemon-fx {
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+	pointer-events: none;
+	z-index: 0;
+}
+
+.pokemon-fx span {
+	position: absolute;
+	bottom: -16%;
+	left: var(--x);
+	width: var(--s);
+	height: var(--s);
+	background-image: var(--img);
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+	image-rendering: pixelated;
+	opacity: 0;
+	/* transform/opacity only — GPU-composited, no per-frame repaint. No
+	   drop-shadow (repaints ×N every frame) and no will-change (N GPU layers). */
+	animation: poke-float var(--dur) linear var(--d) infinite;
+}
+
+/* Off-screen: freeze everything so the section costs nothing while scrolled away */
+.pokemon-fx.paused span { animation-play-state: paused; }
+
+@keyframes poke-breathe {
+	0%, 100% { transform: translate(-50%, -50%) scale(0.98); opacity: 0.08; }
+	50% { transform: translate(-50%, -50%) scale(1.03); opacity: 0.14; }
+}
+
+@keyframes poke-bloom {
+	0%, 100% { opacity: 0.55; }
+	50% { opacity: 1; }
+}
+
+/* Drift upward with a gentle side-to-side sway */
+@keyframes poke-float {
+	0% { transform: translateY(0) translateX(0) rotate(var(--rot, 0deg)) scale(0.9); opacity: 0; }
+	8% { opacity: 0.85; }
+	50% { transform: translateY(-58vh) translateX(var(--sway, 20px)) rotate(0deg) scale(1); }
+	92% { opacity: 0.85; }
+	100% { transform: translateY(-120vh) translateX(0) rotate(calc(-1 * var(--rot, 0deg))) scale(1.04); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.pokemon-bg::before,
+	.pokemon-bg::after,
+	.pokemon-fx span { animation: none; }
+	.pokemon-fx span { opacity: 0.8; }
+}

@@ -59,9 +59,8 @@ const LanguagePrompt = () => {
 	}, [open, hasPreference, setLanguage]);
 
 	useEffect(() => {
-		// Allow forcing the prompt during development for debugging:
-		// - URL param: ?showLanguagePrompt=1
-		// - localStorage: debugShowLanguagePrompt = '1'
+		// Mostrar el prompt siempre al cargar la página (antes se mostraba solo si no había preferencia).
+		// Mantener las opciones de forzar para desarrollo/URL/localStorage por si se necesitan.
 		let forced = false;
 		if (typeof window !== "undefined") {
 			try {
@@ -75,7 +74,7 @@ const LanguagePrompt = () => {
 					forced = true;
 				}
 
-				// Para forzar que aparezca el popup durante el desarrollo
+				// Forzar que aparezca el popup durante el desarrollo
 				if (import.meta.env && import.meta.env.DEV === true) {
 					console.debug("[LanguagePrompt] Force show in development");
 					forced = true;
@@ -85,18 +84,13 @@ const LanguagePrompt = () => {
 			}
 		}
 
-		if (!hasPreference || forced) {
-			console.debug("[LanguagePrompt] Opening prompt (hasPreference=", hasPreference, ", forced=", forced, ")");
-			// Delay opening to allow canvas and other heavy components to render first
-			const delayTimer = setTimeout(() => {
-				setOpen(true);
-			}, 1500); // Wait 1.5s for initial render to complete
-			return () => clearTimeout(delayTimer);
-		} else {
-			console.debug("[LanguagePrompt] No need to show prompt (hasPreference=", hasPreference, ")");
-			setOpen(false);
-		}
-	}, [hasPreference]);
+		console.debug("[LanguagePrompt] Opening prompt on page load (forced=", forced, ")");
+		// Delay opening to allow canvas and other heavy components to render first
+		const delayTimer = setTimeout(() => {
+			setOpen(true);
+		}, 1500); // Wait 1.5s for initial render to complete
+		return () => clearTimeout(delayTimer);
+	}, []);
 
 	const [timer, setTimer] = useState(null);
 	const [remainingTime, setRemainingTime] = useState(20);

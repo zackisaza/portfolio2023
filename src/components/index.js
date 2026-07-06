@@ -9,6 +9,7 @@ import Contact from './Contact';
 import MyCompany from './MyCompany';
 import ScrollToTop from './ScrollToTop';
 import Build from './Build';
+import Projects from './Projects';
 
 export {
   Hero,
@@ -16,6 +17,7 @@ export {
   About,
   Tech,
   Experience,
+  Projects,
   Works,
   Contact,
   MyCompany,

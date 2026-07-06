@@ -1,3 +1,8 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+/* TCG-card type: Cabin ≈ Gill Sans (names/text), Jost ≈ Futura (HP/damage numbers) */
+@import url('https://fonts.googleapis.com/css2?family=Cabin:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Jost:wght@500;600;700&display=swap');
+
 /* Mejorar padding del texto interior del modal en móvil */
 @media (max-width: 640px) {
 	.language-modal-responsive .text-black-100\/80,
@@ -63,9 +68,6 @@
 		font-size: 0.85rem;
 	}
 }
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -292,6 +294,14 @@
 	}
 }
 
+/* Make timeline dates white on desktop for better contrast */
+@media (min-width: 768px) {
+    .vertical-timeline-element-date {
+        color: #ffffff !important;
+        font-weight: 600;
+    }
+}
+
 @keyframes mulShdSpin {
 	0%,
 	100% {
@@ -394,8 +404,8 @@
 			#7a00ff,
 			#ff00ea,
 			#ff7a00);
-	/* Oversized backgrounds so rotation never reveals edges (viewport-scale) */
-	background-size: 400% 400%, 400% 400%, 800vmax 800vmax;
+	/* Card-relative sizes (not 800vmax) so each frame rasters a tiny area */
+	background-size: 400% 400%, 400% 400%, 260% 260%;
 	background-position:
 		var(--lx, 0%) var(--ly, 0%),
 		calc(100% - var(--lx, 0%)) calc(100% - var(--ly, 0%)),
@@ -403,21 +413,19 @@
 	mix-blend-mode: screen;
 	opacity: 0.18;
 	filter: saturate(1.35) brightness(1.1);
-	will-change: transform, background-position, filter, opacity;
+	will-change: transform;
 }
 .holo-card:hover .holo-overlay { opacity: 0.34; filter: saturate(1.6) brightness(1.25); }
-.holo-animate .holo-overlay { 
+.holo-animate .holo-overlay {
 	transform-origin: 50% 50%;
-	animation: holo-rotate 14s linear infinite, holo-sheen 6s ease-in-out infinite alternate;
+	/* Only the GPU-composited transform animates now — no per-frame
+	   background-position repaint (that + an 800vmax tile was the slowdown). */
+	animation: holo-rotate 18s linear infinite;
 }
 .holo-pointer .holo-overlay { animation: none !important; }
-@keyframes holo-sheen {
-	0%   { background-position: 0% 0%, 100% 100%, 50% 50%; }
-	100% { background-position: 100% 100%, 0% 0%, 60% 40%; }
-}
 @keyframes holo-rotate {
-	from { transform: rotate(0deg) scale(3); }
-	to   { transform: rotate(360deg) scale(3); }
+	from { transform: rotate(0deg) scale(1.8); }
+	to   { transform: rotate(360deg) scale(1.8); }
 }
 @media (prefers-reduced-motion: reduce) {
 	.holo-animate .holo-overlay { animation: none; }
@@ -458,37 +466,39 @@
 	position: absolute;
 	inset: 0;
 	border-radius: inherit;
-	padding: 1px; /* frame thickness */
-	/* Gold base with subtle accent infusions from theme */
-	background: linear-gradient(135deg,
-		#ffd36a 0%,
-		rgba(var(--accent-rgb), 0.35) 20%,
-		#ffae00 40%,
-		rgba(var(--accent-rgb), 0.35) 60%,
-		#ffd36a 80%,
-		#fff0b8 100%
+	padding: 3px; /* metallic edge thickness, like a real SV card border */
+	/* Brushed-silver metallic edge (Scarlet & Violet common frame) */
+	background: linear-gradient(140deg,
+		#f4f5f7 0%,
+		#aeb2ba 16%,
+		#e7e9ee 30%,
+		#8f939c 46%,
+		#dfe2e8 60%,
+		#a2a6af 76%,
+		#f0f1f4 100%
 	);
-		-webkit-mask: 
+		-webkit-mask:
 		linear-gradient(#000 0 0) content-box,
 		linear-gradient(#000 0 0);
-		mask: 
+		mask:
 			linear-gradient(#000 0 0) content-box,
 			linear-gradient(#000 0 0);
 	-webkit-mask-composite: xor;
 					mask-composite: exclude;
 	pointer-events: none;
-	opacity: 0.9;
+	opacity: 1;
 }
 
-/* Slightly richer accent on hover for a foil pop */
+/* Brighter brushed sheen on hover */
 .tcg-card:hover::after {
-  background: linear-gradient(135deg,
-    #ffd36a 0%,
-    rgba(var(--accent-rgb), 0.5) 18%,
-    #ffae00 40%,
-    rgba(var(--accent-rgb), 0.5) 62%,
-    #ffd36a 82%,
-    #fff0b8 100%
+  background: linear-gradient(140deg,
+    #ffffff 0%,
+    #c2c6ce 16%,
+    #f2f4f7 30%,
+    #9ba0a9 46%,
+    #eef0f4 60%,
+    #b0b4bd 76%,
+    #ffffff 100%
   );
 }
 .tcg-inner {
@@ -550,9 +560,11 @@
   transform: rotateY(180deg);
 }
 /* Flip triggers: hover and toggle */
-.tcg-flip-container:hover,
-.tcg-flip-container.is-flipped {
-  transform: rotateY(180deg);
+.tcg-flip-container.is-flipped,
+/* Allow hovering the parent hover-area to flip the card on desktop */
+.tcg-hover-area:hover .tcg-flip-container,
+.tcg-flip-container:hover {
+	transform: rotateY(180deg);
 }
 
 /* TCG header+meta */
@@ -717,73 +729,91 @@
 
 /* Card Border - Matches real Pokemon card golden/colored frame */
 .pokemon-card-border {
-	padding: 12px;
+	padding: 9px;
 	background: linear-gradient(135deg, #f5e6d3 0%, #e8d4b8 50%, #d4c4a8 100%);
-	border-radius: 16px;
+	border-radius: 14px;
 	height: 100%;
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
+	gap: 6px;
 	position: relative;
+	/* The colored type body reads as the inner frame: a thin dark rule + a soft
+	   inner light line define its edge just inside the outer metallic border. */
+	box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.16), inset 0 0 0 2px rgba(255, 255, 255, 0.35);
 }
 
-.border-electric { 
-	background: linear-gradient(135deg, #fff4cc 0%, #ffdf5e 40%, #ffd700 70%, #f5c842 100%); 
+/* Flatter, more uniform type bodies (SM cards are a fairly solid color with a
+   gentle top-to-bottom shade), so text sits cleanly on top. */
+.border-electric {
+	background: linear-gradient(180deg, #ffe875 0%, #f7d33f 55%, #f0c62e 100%);
 }
-.border-fire { 
-	background: linear-gradient(135deg, #ffd4cc 0%, #ff9966 40%, #ff7744 70%, #e65530 100%); 
+.border-fire {
+	background: linear-gradient(180deg, #ffb27a 0%, #ff8a4d 55%, #f2703a 100%);
 }
-.border-water { 
-	background: linear-gradient(135deg, #d4e8ff 0%, #88c5ff 40%, #5eaaff 70%, #3d8fe6 100%); 
+.border-water {
+	background: linear-gradient(180deg, #a9d4ff 0%, #6fb0f0 55%, #4f97e0 100%);
 }
-.border-grass { 
-	background: linear-gradient(135deg, #dff4d4 0%, #a8e088 40%, #7dd655 70%, #5cb842 100%); 
+.border-grass {
+	background: linear-gradient(180deg, #bfe89e 0%, #8fd468 55%, #74c24f 100%);
 }
-.border-fairy { 
-	background: linear-gradient(135deg, #ffd4e8 0%, #ffb3d9 40%, #ff88c4 70%, #e65fa8 100%); 
+.border-fairy {
+	background: linear-gradient(180deg, #ffc3e0 0%, #ff9fce 55%, #f07fb8 100%);
 }
 
-/* Header Section */
+/* Header — the name row sits directly on the colored body (SM style), NOT a
+   grey banner. Stage tab left, name, then HP + type symbol right. */
 .pokemon-card-header {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 6px 8px;
-	background: rgba(255, 255, 255, 0.75);
-	border-radius: 8px;
+	padding: 3px 4px 2px;
+	background: transparent;
+	border: none;
+	border-radius: 0;
 }
 
+/* "FASE 1 / BÁSICO" — a small dark slate tab like the real card */
 .pokemon-stage {
-	font-size: 9px;
+	font-family: 'Cabin', 'Gill Sans', 'Segoe UI', sans-serif;
+	font-size: 8px;
 	font-weight: 700;
-	color: #666;
+	color: #f2f4f6;
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
+	padding: 2px 7px;
+	border-radius: 3px;
+	background: linear-gradient(180deg, #4a555d 0%, #333c43 100%);
+	border: 1px solid rgba(0, 0, 0, 0.35);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+	white-space: nowrap;
 }
 
 .pokemon-name {
-	font-size: 20px;
-	font-weight: 900;
-	color: #000;
-	letter-spacing: -0.5px;
-	text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+	font-family: 'Cabin', 'Gill Sans', 'Segoe UI', sans-serif;
+	font-size: 17px;
+	font-weight: 700;
+	color: #2a2620;
+	letter-spacing: -0.1px;
+	text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
 	line-height: 1;
-	max-width: 200px;
+	max-width: 190px;
 }
 
 .pokemon-ps-label {
-	font-size: 11px;
+	font-family: 'Cabin', 'Gill Sans', 'Segoe UI', sans-serif;
+	font-size: 9px;
 	font-weight: 700;
-	color: #000;
-	letter-spacing: 0px;
+	color: #4a453c;
+	letter-spacing: 0.3px;
 	line-height: 1;
 }
 
 .pokemon-hp {
-	font-size: 28px;
-	font-weight: 900;
-	color: #e63946;
-	letter-spacing: -1px;
+	font-family: 'Jost', 'Futura', 'Segoe UI', sans-serif;
+	font-size: 22px;
+	font-weight: 700;
+	color: #2a2620;
+	letter-spacing: -0.5px;
 	line-height: 1;
 }
 
@@ -806,20 +836,26 @@
 	}
 }
 
-/* Image Container */
+/* Image Container — thin gold/bronze art frame (SM style), with a dark inner
+   line and a soft inset shadow so the art recesses into a window. */
 .pokemon-image-container {
-	background: linear-gradient(135deg, #fff 0%, #f8f8f8 100%);
-	border-radius: 12px;
+	background: #0d0d12;
+	border-radius: 4px;
 	overflow: hidden;
-	border: 3px solid rgba(0, 0, 0, 0.08);
+	border: none;
 	position: relative;
+	box-shadow:
+		0 0 0 1px rgba(60, 40, 8, 0.7),
+		0 0 0 2.5px #c8a24a,
+		0 0 0 3.5px rgba(60, 40, 8, 0.55),
+		inset 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .pokemon-image-frame {
 	width: 100%;
 	height: 200px;
 	overflow: hidden;
-	background: radial-gradient(circle at center, rgba(255, 255, 255, 0.8) 0%, rgba(240, 240, 240, 0.9) 100%);
+	background: radial-gradient(circle at 50% 38%, #2a2f45 0%, #0d0d12 78%);
 }
 
 .pokemon-image {
@@ -829,18 +865,65 @@
 	object-position: center;
 }
 
-/* Pokedex info bar */
+/* Pokédex caption — light cream strip under the art (SM style), centered */
 .pokedex-bar {
-	background: linear-gradient(90deg, rgba(255, 255, 255, 0.95) 0%, rgba(245, 245, 245, 0.95) 100%);
-	padding: 4px 8px;
-	border-top: 1px solid rgba(0, 0, 0, 0.08);
+	background: linear-gradient(180deg, #f7f1e0 0%, #efe6cd 100%);
+	padding: 3px 8px;
+	border-top: 1px solid rgba(90, 66, 30, 0.3);
+	text-align: center;
 }
 
-/* Attacks Section */
+/* Evolution badge — small cream box with a framed pixel sprite, top-left of art */
+.pokemon-evo-box {
+	position: absolute;
+	top: 5px;
+	left: 5px;
+	z-index: 3;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	padding: 2px 6px 2px 2px;
+	background: linear-gradient(180deg, rgba(250, 246, 235, 0.96), rgba(238, 229, 208, 0.96));
+	border: 1px solid rgba(90, 66, 30, 0.5);
+	border-radius: 4px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+.pokemon-evo-box .evo-thumb {
+	width: 20px;
+	height: 20px;
+	border-radius: 3px;
+	background: #fff;
+	border: 1px solid rgba(90, 66, 30, 0.45);
+	display: grid;
+	place-items: center;
+	overflow: hidden;
+	flex: none;
+}
+
+.pokemon-evo-box .evo-thumb img {
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+	image-rendering: pixelated;
+}
+
+.pokemon-evo-box .evo-label {
+	font-family: 'Cabin', 'Gill Sans', 'Segoe UI', sans-serif;
+	font-size: 7.5px;
+	font-weight: 700;
+	color: #4a3a1e;
+	line-height: 1;
+	white-space: nowrap;
+}
+
+/* SM layout: attacks sit directly on the colored body, under a thin divider,
+   with a whisper-light wash only for legibility on darker types. */
 .pokemon-attacks-section {
-	background: rgba(255, 255, 255, 0.7);
-	border-radius: 8px;
-	padding: 8px;
+	background: rgba(255, 255, 255, 0.08);
+	border-radius: 0;
+	border: none;
+	padding: 8px 10px 6px;
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
@@ -860,72 +943,413 @@
 }
 
 .pokemon-attack-name {
-	font-size: 13px;
-	font-weight: 800;
-	color: #000;
-	text-transform: capitalize;
+	font-family: 'Cabin', 'Gill Sans', 'Segoe UI', sans-serif;
+	font-size: 14px;
+	font-weight: 700;
+	color: #1a150d;
+	text-transform: none;
+	letter-spacing: -0.1px;
 	margin-bottom: 2px;
 }
 
 .pokemon-attack-description {
-	font-size: 10px;
+	font-family: 'Cabin', 'Gill Sans', 'Segoe UI', sans-serif;
+	font-size: 11px;
 	line-height: 1.3;
-	color: #333;
+	color: #3a3226;
 	font-weight: 500;
 }
 
 .pokemon-attack-damage {
-	font-size: 24px;
-	font-weight: 900;
-	color: #000;
+	font-family: 'Jost', 'Futura', 'Segoe UI', sans-serif;
+	font-size: 26px;
+	font-weight: 700;
+	color: #1a150d;
 	min-width: 40px;
 	text-align: right;
+	letter-spacing: -0.5px;
 }
 
-/* Footer Section */
+/* Footer — also on the type body, below the attacks */
 .pokemon-footer {
-	background: rgba(255, 255, 255, 0.7);
-	border-radius: 8px;
-	padding: 8px;
+	background: transparent;
+	border-radius: 0;
+	border: none;
+	padding: 4px 10px 8px;
 	display: flex;
 	flex-direction: column;
 	gap: 6px;
 }
 
+/* Weakness / Resistance / Retreat — the real card's plain bottom bar:
+   three columns under a divider rule, thin separators, no boxed cells. */
+/* Weakness / Resistance / Retreat — SM light strip with thin dividers,
+   on a soft cream so it reads as part of the colored body, not a grey bar. */
 .pokemon-stats-row {
 	display: flex;
-	align-items: center;
+	align-items: stretch;
 	justify-content: space-between;
-	padding: 6px 0;
-	border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+	gap: 0;
+	padding: 3px 4px;
+	background: rgba(255, 252, 244, 0.62);
+	border: 1px solid rgba(90, 66, 30, 0.32);
+	border-radius: 4px;
 }
 
 .pokemon-stat {
 	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+	gap: 4px;
+	flex: 1;
+	min-height: 24px;
+	padding: 0 3px;
+}
+
+.pokemon-stat + .pokemon-stat {
+	border-left: 1px solid rgba(90, 66, 30, 0.22);
+}
+
+/* Inline SVG energy symbols (official-style colored discs) */
+.energy-sym {
+	flex: none;
+	filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.28));
+}
+
+/* Pokédex caption under the art window (N.º · type · height · weight) */
+.pokedex-caption {
+	font-family: 'Cabin', 'Gill Sans', 'Segoe UI', sans-serif;
+	font-size: 9px;
+	font-weight: 600;
+	color: rgba(40, 30, 12, 0.72);
+	letter-spacing: 0.1px;
+}
+
+/* ===== 3D booster box (WebGL, covers the deck until clicked) ===== */
+.box3d-wrap {
+	position: absolute;
+	inset: 0;
+	margin: auto;
+	width: clamp(260px, 30vw, 440px);
+	height: clamp(540px, 84vh, 900px);
+	z-index: 40;
+	cursor: pointer;
+	outline: none;
+}
+.box3d-wrap canvas {
+	width: 100% !important;
+	height: 100% !important;
+	display: block;
+}
+.box3d-hint {
+	position: absolute;
+	left: 50%;
+	bottom: -8px;
+	transform: translateX(-50%);
+	white-space: nowrap;
+	font-family: 'Press Start 2P', monospace;
+	font-size: clamp(9px, 1.4vh, 12px);
+	color: #fff;
+	text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+	animation: pack-hint-pulse 1.6s ease-in-out infinite;
+	pointer-events: none;
+	z-index: 2;
+}
+
+/* ===== Booster pack (large — covers the whole deck until clicked open) ===== */
+.card-pack {
+	position: absolute;
+	inset: 0;
+	margin: auto; /* centred in the grid without transform (framer owns transform) */
+	/* Tall and slim, like a real booster pack (~1 : 2.25) */
+	width: clamp(240px, 27vw, 396px);
+	height: clamp(540px, 84vh, 900px);
+	z-index: 40;
+	border: 0;
+	padding: 0;
+	background: none;
+	cursor: pointer;
+	filter: drop-shadow(0 40px 60px rgba(0, 0, 0, 0.55));
+}
+
+.card-pack .pack-piece {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	display: block;
+	overflow: hidden;
+}
+
+/* --- Plastic wrapper texture shared by both halves ---
+   Layered gradients fake crumpled foil: specular streaks, soft crease
+   shadows, a fine plastic grain, and a holographic base. background-size is
+   200% wide so the two halves line up into one continuous wrapper. */
+.card-pack .pack-half {
+	width: 51%; /* slight overlap so the centre seam has no gap while closed */
+	/* Premium silvery-holographic foil: a pale prismatic shimmer under a fine
+	   diamond lattice (kept crisp with its own background-size). */
+	background-image:
+		repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.5) 0 1px, rgba(255, 255, 255, 0) 1px 15px),
+		repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.5) 0 1px, rgba(255, 255, 255, 0) 1px 15px),
+		linear-gradient(125deg, #e9f1ff 0%, #ffe9f3 18%, #e9fff2 37%, #fff7e3 57%, #efe9ff 78%, #e9f1ff 100%);
+	background-size: 30px 30px, 30px 30px, 200% 100%;
+	background-repeat: repeat, repeat, no-repeat;
+}
+
+.card-pack .pack-half-l {
+	left: 0;
+	background-position: center, center, left center;
+	border-radius: 16px 2px 2px 16px;
+	box-shadow: inset 0 3px 10px rgba(255, 255, 255, 0.6), inset -12px 0 24px rgba(120, 130, 160, 0.3);
+}
+
+.card-pack .pack-half-r {
+	right: 0;
+	background-position: center, center, right center;
+	border-radius: 2px 16px 16px 2px;
+	box-shadow: inset 0 3px 10px rgba(255, 255, 255, 0.6), inset 12px 0 24px rgba(120, 130, 160, 0.3);
+}
+
+/* Centre fold crease of the wrapper */
+.card-pack .pack-fold {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 50%;
+	width: 14px;
+	transform: translateX(-50%);
+	background: linear-gradient(90deg, rgba(0, 0, 0, 0.18), rgba(255, 255, 255, 0.35) 45%, rgba(255, 255, 255, 0.35) 55%, rgba(0, 0, 0, 0.18));
+	mix-blend-mode: overlay;
+	pointer-events: none;
+	z-index: 2;
+}
+
+/* Cylindrical volume — the wrapper bulges over the cards inside: bright down
+   the middle, dark toward the side edges. This is the main "it's a 3D pack,
+   not a flat card" cue. A second layer adds a top-lit sheen. */
+.card-pack .pack-bulge {
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+	pointer-events: none;
+	border-radius: 16px;
+	background:
+		linear-gradient(90deg,
+			rgba(0, 0, 0, 0.42) 0%, rgba(0, 0, 0, 0.02) 12%,
+			rgba(255, 255, 255, 0.34) 38%, rgba(255, 255, 255, 0.34) 60%,
+			rgba(0, 0, 0, 0.02) 88%, rgba(0, 0, 0, 0.42) 100%),
+		linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 22%, rgba(0, 0, 0, 0) 78%, rgba(0, 0, 0, 0.22) 100%);
+	mix-blend-mode: soft-light;
+}
+
+/* Moving holographic sheen across the whole wrapper */
+.card-pack .pack-shine {
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+	border-radius: 16px;
+	pointer-events: none;
+	z-index: 3;
+}
+.card-pack .pack-shine::before {
+	content: "";
+	position: absolute;
+	inset: -30% -60%;
+	background: linear-gradient(114deg, transparent 42%, rgba(255, 255, 255, 0.5) 49%, transparent 55%);
+	animation: pack-sheen 3.6s ease-in-out infinite;
+}
+
+@keyframes pack-sheen {
+	0% { transform: translateX(-55%); }
+	60%, 100% { transform: translateX(55%); }
+}
+
+/* Crimped, serrated heat-sealed strip at the top (holographic silver, like a
+   real pack) — this is the piece that tears off. Fine teeth on the bottom edge
+   make the silhouette irregular, not a clean rectangle. */
+.card-pack .pack-top {
+	top: -3px;
+	bottom: auto;
+	left: -3px;
+	right: -3px;
+	height: clamp(46px, 7.5%, 78px);
+	background:
+		repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.55) 0 7px, rgba(180, 190, 205, 0.2) 7px 14px),
+		conic-gradient(from 120deg at 50% 50%, #f6d9e6, #dfe8f6, #e6f6ea, #f6f0d9, #f0e0f6, #f6d9e6),
+		linear-gradient(180deg, rgba(255, 255, 255, 0.6), rgba(120, 130, 150, 0.25));
+	border-radius: 16px 16px 2px 2px;
+	box-shadow: inset 0 3px 8px rgba(255, 255, 255, 0.6), inset 0 -6px 10px rgba(80, 90, 110, 0.35), 0 5px 9px rgba(0, 0, 0, 0.28);
+	z-index: 5;
+	/* fine serrated bottom edge = the crimp / torn line */
+	clip-path: polygon(0 0, 100% 0, 100% 74%, 97.5% 100%, 95% 74%, 92.5% 100%, 90% 74%, 87.5% 100%, 85% 74%, 82.5% 100%, 80% 74%, 77.5% 100%, 75% 74%, 72.5% 100%, 70% 74%, 67.5% 100%, 65% 74%, 62.5% 100%, 60% 74%, 57.5% 100%, 55% 74%, 52.5% 100%, 50% 74%, 47.5% 100%, 45% 74%, 42.5% 100%, 40% 74%, 37.5% 100%, 35% 74%, 32.5% 100%, 30% 74%, 27.5% 100%, 25% 74%, 22.5% 100%, 20% 74%, 17.5% 100%, 15% 74%, 12.5% 100%, 10% 74%, 7.5% 100%, 5% 74%, 2.5% 100%, 0 74%);
+}
+
+/* Sealed serrated crimp at the bottom (red) */
+.card-pack .pack-bottom {
+	position: absolute;
+	left: -3px;
+	right: -3px;
+	bottom: -3px;
+	height: clamp(30px, 5%, 54px);
+	background:
+		repeating-linear-gradient(90deg, #e02940 0 8px, #ad1230 8px 16px),
+		linear-gradient(0deg, rgba(255, 255, 255, 0.25), rgba(0, 0, 0, 0.22));
+	border-radius: 2px 2px 16px 16px;
+	box-shadow: inset 0 -3px 8px rgba(0, 0, 0, 0.3), inset 0 4px 6px rgba(255, 255, 255, 0.3);
+	z-index: 4;
+	pointer-events: none;
+	/* serrated top edge */
+	clip-path: polygon(0 100%, 100% 100%, 100% 30%, 97.5% 0, 95% 30%, 92.5% 0, 90% 30%, 87.5% 0, 85% 30%, 82.5% 0, 80% 30%, 77.5% 0, 75% 30%, 72.5% 0, 70% 30%, 67.5% 0, 65% 30%, 62.5% 0, 60% 30%, 57.5% 0, 55% 30%, 52.5% 0, 50% 30%, 47.5% 0, 45% 30%, 42.5% 0, 40% 30%, 37.5% 0, 35% 30%, 32.5% 0, 30% 30%, 27.5% 0, 25% 30%, 22.5% 0, 20% 30%, 17.5% 0, 15% 30%, 12.5% 0, 10% 30%, 7.5% 0, 5% 30%, 2.5% 0, 0 30%);
+}
+
+/* Content overlay laid out like a real pack: logo → TCG banner → emblem →
+   set name → card count, top-to-bottom between the crimped fins. */
+.card-pack .pack-content {
+	position: absolute;
+	inset: 0;
+	z-index: 4;
+	display: flex;
 	flex-direction: column;
 	align-items: center;
+	justify-content: space-between;
+	padding: clamp(52px, 8.5%, 84px) 9% clamp(36px, 6%, 58px);
+	pointer-events: none;
+	text-align: center;
+}
+
+/* Real Pokémon logo (user-provided asset) */
+.card-pack .pack-logo {
+	width: 78%;
+	max-width: 340px;
+	height: auto;
+	object-fit: contain;
+	filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.35));
+	user-select: none;
+}
+
+.card-pack .pack-tcg {
+	margin-top: clamp(4px, 1vh, 10px);
+	font-family: 'Cabin', 'Gill Sans', sans-serif;
+	font-weight: 800;
+	font-size: clamp(10px, 1.7vh, 17px);
+	letter-spacing: 2px;
+	color: #fff;
+	background: linear-gradient(180deg, #d0392b, #a3271c);
+	border: 2px solid #fff;
+	border-radius: 5px;
+	padding: 3px clamp(8px, 2vw, 16px);
+	box-shadow: 0 3px 6px rgba(0, 0, 0, 0.35);
+}
+
+.card-pack .pack-ball {
+	width: clamp(96px, 18vh, 150px);
+	height: clamp(96px, 18vh, 150px);
+	border-radius: 50%;
+	position: relative;
+	background:
+		radial-gradient(circle at 50% 50%, #fff 0 14%, #1a1a1a 14% 20%, transparent 20.4%),
+		radial-gradient(circle at 50% 50%, transparent 0 26%, #1a1a1a 26% 30%, transparent 30.4%),
+		linear-gradient(#1a1a1a 0 0) 50% 50% / 100% 12% no-repeat,
+		linear-gradient(180deg, #ee1c25 0 50%, #f4f4f4 50% 100%);
+	border: 6px solid #1a1a1a;
+	box-shadow: 0 10px 22px rgba(0, 0, 0, 0.45), inset 0 3px 10px rgba(255, 255, 255, 0.55);
+}
+
+.card-pack .pack-set {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	line-height: 1;
 	gap: 2px;
-	flex: 1;
+}
+.card-pack .pack-set b {
+	font-family: 'Cabin', 'Gill Sans', sans-serif;
+	font-weight: 800;
+	font-size: clamp(12px, 2vh, 20px);
+	letter-spacing: 1px;
+	color: #fff;
+	text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+.card-pack .pack-set i {
+	font-family: 'Jost', 'Futura', sans-serif;
+	font-style: italic;
+	font-weight: 700;
+	font-size: clamp(18px, 3.4vh, 34px);
+	letter-spacing: 1px;
+	background: linear-gradient(90deg, #ffd24d, #7ef0c0, #6cc6ff, #b98bff);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+	text-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+.card-pack .pack-count {
+	font-family: 'Cabin', 'Gill Sans', sans-serif;
+	font-weight: 800;
+	font-size: clamp(9px, 1.5vh, 14px);
+	letter-spacing: 1.5px;
+	color: #fff;
+	background: rgba(20, 20, 26, 0.82);
+	border-radius: 999px;
+	padding: 3px clamp(10px, 2vw, 18px);
+	border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.card-pack .pack-hint {
+	position: absolute;
+	left: 50%;
+	bottom: -38px;
+	transform: translateX(-50%);
+	white-space: nowrap;
+	font-family: 'Press Start 2P', monospace;
+	font-size: clamp(9px, 1.4vh, 12px);
+	color: #fff;
+	text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+	animation: pack-hint-pulse 1.6s ease-in-out infinite;
+	z-index: 5;
+}
+
+@keyframes pack-hint-pulse {
+	0%, 100% { opacity: 0.6; }
+	50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.card-pack .pack-shine::before,
+	.card-pack .pack-hint { animation: none; }
+}
+
+/* Illustrator credit line, like "Ilus. AKIRA EGAWA" on real cards */
+.pokemon-illus {
+	font-size: 7.5px;
+	font-weight: 700;
+	letter-spacing: 0.3px;
+	color: #5a4326;
+	text-transform: none;
 }
 
 .stat-label {
+	font-family: 'Cabin', 'Gill Sans', 'Segoe UI', sans-serif;
 	font-size: 8px;
 	font-weight: 700;
-	color: #666;
+	color: #5a4326;
 	text-transform: uppercase;
 	letter-spacing: 0.3px;
 }
 
 .stat-value {
-	font-size: 12px;
-	font-weight: 800;
-	color: #000;
+	font-family: 'Jost', 'Futura', 'Segoe UI', sans-serif;
+	font-size: 13px;
+	font-weight: 700;
+	color: #1a150d;
 }
 
 .pokemon-flavor-text {
-	font-size: 9px;
+	font-family: 'Cabin', 'Gill Sans', 'Segoe UI', sans-serif;
+	font-size: 9.5px;
 	line-height: 1.4;
-	color: #333;
+	color: #4a4032;
 	font-weight: 500;
 	padding: 4px 0;
 	font-style: italic;
@@ -941,9 +1365,10 @@
 }
 
 .card-number {
+	font-family: 'Jost', 'Futura', 'Segoe UI', sans-serif;
 	font-size: 9px;
-	font-weight: 700;
-	color: #000;
+	font-weight: 600;
+	color: #201a10;
 }
 
 .card-set {
@@ -1142,6 +1567,44 @@
 	.back-stats-row {
 		gap: 1px;
 		padding: 1px 0;
+	}
+}
+
+/* Disable hover-based animations/transforms on touch devices / mobile
+	 This prevents the card from moving when a user taps on mobile where :hover
+	 can be triggered by touch and cause unintended movement. We target
+	 environments without hover capability or with a coarse pointer. */
+@media (hover: none), (pointer: coarse) {
+	/* Prevent CSS hover flipping/rotation on mobile */
+	.tcg-hover-area:hover .tcg-flip-container,
+	.tcg-flip-container:hover {
+		transform: none !important;
+	}
+
+	/* Neutralize holo overlay hover boost */
+	.holo-card:hover .holo-overlay {
+		opacity: 0.18 !important;
+		filter: saturate(1.35) brightness(1.1) !important;
+	}
+
+	/* Prevent accent/frame change on hover */
+	.tcg-card:hover::after {
+		background: linear-gradient(135deg,
+			#ffd36a 0%,
+			rgba(var(--accent-rgb), 0.35) 20%,
+			#ffae00 40%,
+			rgba(var(--accent-rgb), 0.35) 60%,
+			#ffd36a 80%,
+			#fff0b8 100%
+		) !important;
+		opacity: 0.9 !important;
+	}
+
+	/* Disable small hover lifts on badges */
+	.pokemon-type-badge:hover,
+	.pokemon-type-badge:active {
+		transform: none !important;
+		box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
 	}
 }
 

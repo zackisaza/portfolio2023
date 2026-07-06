@@ -1,0 +1,398 @@
+/* Bento-box themed Tech section — a top-down flat-lay: warm beige surface,
+   a dark lacquer tray with compartments, chopsticks, and a soy-sauce dish.
+   Each technology is served as a piece of sushi (rice + nori + logo). */
+
+.bento-root {
+	--rice: #f6efdc;
+	--nori: #223027;
+	--tray1: #2c221b;
+	--tray2: #191310;
+	--well: #201811;
+	--wood: #b07d43;
+	position: relative;
+}
+
+.bento-stage {
+	position: relative;
+	width: 100%;
+	max-width: 1120px;
+	margin: 0 auto;
+	padding: clamp(10px, 4vw, 40px) clamp(0px, 8vw, 120px);
+}
+
+/* --- The lacquer tray --- */
+.bento-tray {
+	position: relative;
+	border-radius: clamp(16px, 2.4vw, 26px);
+	padding: clamp(9px, 1.5vw, 16px);
+	background: linear-gradient(160deg, #3a2d24 0%, var(--tray1) 30%, var(--tray2) 100%);
+	box-shadow:
+		0 30px 60px -24px rgba(60, 30, 0, 0.55),
+		0 6px 0 rgba(0, 0, 0, 0.15),
+		inset 0 2px 0 rgba(255, 255, 255, 0.08),
+		inset 0 -3px 8px rgba(0, 0, 0, 0.5);
+	z-index: 2;
+}
+
+.bento-tray::before {
+	content: "";
+	position: absolute;
+	inset: clamp(4px, 0.7vw, 8px);
+	border-radius: clamp(12px, 2vw, 20px);
+	border: 1px solid rgba(255, 255, 255, 0.05);
+	pointer-events: none;
+}
+
+.bento-grid {
+	display: grid;
+	gap: clamp(7px, 1.1vw, 12px);
+	grid-template-columns: 1fr 1fr;
+	grid-template-rows: auto auto;
+	grid-template-areas:
+		"front back"
+		"cloud data";
+}
+
+.cell-frontend { grid-area: front; }
+.cell-backend { grid-area: back; }
+.cell-cloud { grid-area: cloud; }
+.cell-data { grid-area: data; }
+
+/* --- A compartment (a well in the tray) --- */
+.bento-cell {
+	position: relative;
+	border-radius: clamp(10px, 1.6vw, 16px);
+	padding: clamp(10px, 1.4vw, 16px);
+	background:
+		radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, 0.04), transparent 60%),
+		var(--well);
+	box-shadow:
+		inset 0 3px 9px rgba(0, 0, 0, 0.6),
+		inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+	display: flex;
+	flex-direction: column;
+	gap: clamp(8px, 1vw, 12px);
+	min-height: 0;
+}
+
+.cell-head {
+	display: flex;
+	align-items: baseline;
+	gap: 8px;
+}
+
+.cell-head b {
+	font-family: 'Inter', system-ui, sans-serif;
+	font-weight: 800;
+	font-size: clamp(14px, 1.5vw, 18px);
+	color: #fff;
+	letter-spacing: -0.01em;
+}
+
+.cell-head .kanji {
+	font-size: clamp(10px, 1.05vw, 12.5px);
+	font-weight: 700;
+	letter-spacing: 0.14em;
+	color: var(--wood);
+}
+
+.pieces {
+	display: flex;
+	flex-wrap: wrap;
+	gap: clamp(7px, 0.9vw, 11px);
+	align-content: flex-start;
+}
+
+/* --- A tech served as a sushi piece (rice + nori wrap + logo) --- */
+.bento-sushi {
+	position: relative;
+	width: clamp(46px, 5.4vw, 62px);
+	height: clamp(46px, 5.4vw, 62px);
+	border-radius: 28% 28% 30% 30% / 30%;
+	background:
+		radial-gradient(circle at 22% 18%, rgba(0, 0, 0, 0.05) 0.6px, transparent 1.4px) 0 0 / 9px 9px,
+		radial-gradient(circle at 60% 55%, rgba(0, 0, 0, 0.05) 0.6px, transparent 1.4px) 4px 4px / 11px 11px,
+		linear-gradient(180deg, #fbf6ea, var(--rice));
+	border: clamp(3px, 0.45vw, 5px) solid var(--nori);
+	box-shadow: 0 4px 7px -3px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+	display: grid;
+	place-items: center;
+	transition: transform 0.18s ease;
+}
+
+.bento-sushi:hover {
+	transform: translateY(-3px) rotate(-3deg) scale(1.06);
+	z-index: 3;
+}
+
+.bento-sushi img {
+	width: 62%;
+	height: 62%;
+	object-fit: contain;
+	filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.15));
+}
+
+/* --- Real food garnish (no plate, clearly not a technology) --- */
+.bento-food {
+	width: clamp(42px, 5vw, 56px);
+	height: clamp(42px, 5vw, 56px);
+	display: grid;
+	place-items: center;
+}
+
+.bento-food img {
+	width: 84%;
+	height: 84%;
+	object-fit: contain;
+	filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.3)) saturate(1.05);
+	transform: rotate(-6deg);
+	transition: transform 0.18s ease;
+}
+
+.bento-food img:hover {
+	transform: rotate(0) scale(1.1);
+}
+
+/* --- Soy-sauce dish (top-left of the flat-lay) --- */
+.bento-soy {
+	position: absolute;
+	top: clamp(0px, 1vw, 12px);
+	left: clamp(4px, 2vw, 44px);
+	width: clamp(48px, 7vw, 84px);
+	height: clamp(48px, 7vw, 84px);
+	border-radius: 50%;
+	background: radial-gradient(circle at 50% 45%, #4a2415 0 46%, #efe7d6 47% 100%);
+	box-shadow: 0 10px 18px -8px rgba(60, 30, 0, 0.5), inset 0 0 0 2px rgba(0, 0, 0, 0.05);
+	z-index: 1;
+}
+
+.bento-soy::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: 50%;
+	background: radial-gradient(circle at 38% 34%, rgba(255, 255, 255, 0.35) 0 8%, transparent 26%);
+}
+
+/* --- Little sauce spoon --- */
+.bento-spoon {
+	position: absolute;
+	top: clamp(78px, 13vw, 156px);
+	left: clamp(26px, 4.5vw, 74px);
+	width: clamp(30px, 4vw, 46px);
+	height: clamp(52px, 7vw, 82px);
+	border-radius: 50% 50% 46% 46% / 62% 62% 38% 38%;
+	background: linear-gradient(180deg, #f3ecdd, #e4dbc7);
+	box-shadow: 0 8px 14px -8px rgba(60, 30, 0, 0.4);
+	transform: rotate(8deg);
+	z-index: 1;
+}
+
+.bento-spoon::after {
+	content: "";
+	position: absolute;
+	inset: 24% 26% 30%;
+	border-radius: 50% 50% 46% 46% / 60% 60% 40% 40%;
+	background: radial-gradient(circle at 50% 35%, #ffb347, #f08a2d);
+}
+
+/* --- Chopsticks on both sides --- */
+/* Crossed wooden chopsticks with a sushi piece resting on top (reference). */
+.bento-chops {
+	position: absolute;
+	width: clamp(96px, 15vw, 180px);
+	height: clamp(170px, 28vw, 320px);
+	z-index: 1;
+}
+
+.bento-chops span {
+	position: absolute;
+	top: 0;
+	left: 50%;
+	width: clamp(7px, 0.85vw, 11px);
+	height: 100%;
+	margin-left: -5px;
+	border-radius: 8px;
+	background: linear-gradient(90deg, #9a5f28, #d8a45f 45%, #b97a3b);
+	box-shadow: 0 12px 16px -10px rgba(0, 0, 0, 0.4), inset 0 0 7px rgba(0, 0, 0, 0.18);
+	transform-origin: 50% 32%;
+}
+
+.bento-chops span:nth-child(1) { transform: rotate(12deg); }
+.bento-chops span:nth-child(2) { transform: rotate(-12deg); }
+
+.bento-chops .chops-sushi {
+	position: absolute;
+	top: clamp(-8px, -0.4vw, 2px);
+	left: 50%;
+	width: clamp(38px, 5.6vw, 58px);
+	transform: translateX(-24%);
+	filter: drop-shadow(0 4px 5px rgba(0, 0, 0, 0.3));
+}
+
+.chops-inner {
+	position: relative;
+	width: 100%;
+	height: 100%;
+}
+
+.bento-chops-l {
+	left: clamp(0px, 1.5vw, 34px);
+	top: clamp(74px, 10vw, 150px);
+}
+
+.bento-chops-l .chops-inner {
+	transform: rotate(-10deg) scaleX(-1);
+}
+
+.bento-chops-r {
+	right: clamp(0px, 1.5vw, 34px);
+	top: clamp(26px, 5vw, 84px);
+}
+
+.bento-chops-r .chops-inner {
+	transform: rotate(7deg);
+}
+
+@media (max-width: 900px) {
+	.bento-soy,
+	.bento-spoon,
+	.bento-chops { display: none; }
+	.bento-stage { padding-left: 0; padding-right: 0; }
+}
+
+@media (max-width: 768px) {
+	.bento-grid {
+		grid-template-columns: 1fr;
+		grid-template-areas:
+			"front"
+			"back"
+			"cloud"
+			"data";
+	}
+}
+
+/* --- Sushi becomes a button (clickable) --- */
+.bento-sushi {
+	appearance: none;
+	border: clamp(3px, 0.45vw, 5px) solid var(--nori);
+	padding: 0;
+	cursor: pointer;
+}
+
+/* --- Tech detail modal (chopsticks grab the piece) --- */
+.bento-modal-back {
+	position: fixed;
+	inset: 0;
+	z-index: 9998;
+	display: grid;
+	place-items: center;
+	padding: 20px;
+	background: rgba(30, 18, 8, 0.55);
+	backdrop-filter: blur(3px);
+}
+
+.bento-modal {
+	position: relative;
+	width: min(440px, 92vw);
+	border-radius: 22px;
+	padding: 18px 26px 30px;
+	background: linear-gradient(180deg, #fbf6ea, #efe7d5);
+	box-shadow: 0 30px 70px -20px rgba(40, 20, 0, 0.6);
+	text-align: center;
+	color: #2e2116;
+	overflow: hidden;
+}
+
+.bento-modal::before {
+	content: "";
+	position: absolute;
+	inset: 0 0 auto 0;
+	height: 8px;
+	background: linear-gradient(90deg, #ef4e3c, #ffb347, #223027);
+}
+
+.bento-modal-x {
+	position: absolute;
+	top: 12px;
+	right: 14px;
+	width: 30px;
+	height: 30px;
+	border-radius: 50%;
+	border: 0;
+	background: rgba(0, 0, 0, 0.06);
+	color: #5b4632;
+	font-size: 20px;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.bento-modal-x:hover { background: rgba(0, 0, 0, 0.12); }
+
+.grab {
+	position: relative;
+	width: 220px;
+	height: 168px;
+	margin: 6px auto 4px;
+}
+
+.grab-sushi {
+	position: absolute;
+	left: 50%;
+	top: 56%;
+	transform: translate(-50%, -50%);
+	width: 116px;
+	height: 116px;
+	border-radius: 26% 26% 28% 28% / 28%;
+	background:
+		radial-gradient(circle at 22% 18%, rgba(0, 0, 0, 0.05) 1px, transparent 2px) 0 0 / 12px 12px,
+		linear-gradient(180deg, #fbf6ea, var(--rice));
+	border: 7px solid var(--nori);
+	box-shadow: 0 10px 18px -8px rgba(0, 0, 0, 0.4);
+	display: grid;
+	place-items: center;
+	z-index: 1;
+}
+
+.grab-sushi img {
+	width: 62%;
+	height: 62%;
+	object-fit: contain;
+}
+
+.grab-chop {
+	position: absolute;
+	top: -16px;
+	width: 13px;
+	height: 168px;
+	border-radius: 8px;
+	background: linear-gradient(90deg, #9a5f28, #d8a45f 45%, #b97a3b);
+	box-shadow: 0 10px 14px -8px rgba(0, 0, 0, 0.35), inset 0 0 7px rgba(0, 0, 0, 0.18);
+	z-index: 2;
+}
+
+.grab-chop.l { left: calc(50% - 34px); transform-origin: 50% 8%; }
+.grab-chop.r { left: calc(50% + 22px); transform-origin: 50% 8%; }
+
+.bento-modal h3 {
+	margin: 4px 0 6px;
+	font-size: 26px;
+	font-weight: 900;
+	color: #2e2116;
+}
+
+.bento-modal p {
+	margin: 0;
+	font-size: 15px;
+	line-height: 1.5;
+	color: #5b4632;
+}
+
+.bento-modal .kanji-tag {
+	display: inline-block;
+	margin-top: 12px;
+	font-size: 11px;
+	letter-spacing: 0.2em;
+	color: #a9642a;
+	font-weight: 700;
+}

@@ -56,6 +56,8 @@ const Earth = ({ visible = true }) => {
 const EarthCanvas = ({ sectionIndex = 6 }) => {
 	const [isVisible, setIsVisible] = useState(false);
 	const canvasRef = useRef(null);
+	const canvasElRef = useRef(null);
+	const cleanupRef = useRef(null);
 	const { suspendAboveOf, exclusiveSection } = useCanvasBudget();
 	const suspendedByExclusive = exclusiveSection !== null && sectionIndex !== exclusiveSection;
 	const suspendedByAbove = suspendAboveOf !== null && sectionIndex < suspendAboveOf;
@@ -77,6 +79,9 @@ const EarthCanvas = ({ sectionIndex = 6 }) => {
 			if (canvasRef.current) {
 				observer.unobserve(canvasRef.current);
 			}
+			if (cleanupRef.current) {
+				try { cleanupRef.current(); } catch (e) {}
+			}
 		};
 	}, []);
 
@@ -91,6 +96,35 @@ const EarthCanvas = ({ sectionIndex = 6 }) => {
 					shadows
 					frameloop='demand'
 					dpr={[1, 1.25]}
+					onCreated={(state) => {
+						try {
+							const renderer = state.gl;
+							const canvas = renderer.domElement;
+							canvasElRef.current = canvas;
+
+							const onLost = (e) => {
+								try { e.preventDefault(); } catch (err) {}
+								console.warn('WebGL context lost (handled)');
+							};
+
+							const onRestore = () => {
+								console.info('WebGL context restored');
+							};
+
+							canvas.addEventListener('webglcontextlost', onLost, false);
+							canvas.addEventListener('webglcontextrestored', onRestore, false);
+
+							cleanupRef.current = () => {
+								try {
+									canvas.removeEventListener('webglcontextlost', onLost);
+									canvas.removeEventListener('webglcontextrestored', onRestore);
+								} catch (err) {}
+								try {
+									if (renderer && typeof renderer.dispose === 'function') renderer.dispose();
+								} catch (err) {}
+							};
+						} catch (err) {}
+					}}
 					gl={{ preserveDrawingBuffer: false, antialias: false, powerPreference: 'high-performance' }}
 					camera={{
 						fov: 45,

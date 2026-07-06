@@ -1,9 +1,9 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useScroll } from 'framer-motion';
 import { navLinks } from '../constants';
 import { useLanguage } from '../context/LanguageContext';
-import { wolfcave, link as linkIcon } from '../assets';
+import { wolfcave } from '../assets';
 import LanguageToggle from './LanguageToggle';
 
 const useActiveSection = (ids) => {
@@ -48,29 +48,25 @@ const SideNavbar = () => {
   const { language } = useLanguage();
   const ids = useMemo(() => navLinks.map((n) => n.id), []);
   const active = useActiveSection(ids);
+  const { scrollYProgress } = useScroll();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 1024px)');
-    const update = () => {
-      const scrolled = window.scrollY > 160;
-      setVisible(mq.matches && scrolled);
-    };
+    const update = () => setVisible(mq.matches && window.scrollY > 160);
     update();
     const onScroll = () => update();
-    const onResize = () => update();
     window.addEventListener('scroll', onScroll, { passive: true });
-    mq.addEventListener('change', onResize);
-    window.addEventListener('resize', onResize);
+    mq.addEventListener('change', update);
+    window.addEventListener('resize', update);
     return () => {
       window.removeEventListener('scroll', onScroll);
-      mq.removeEventListener('change', onResize);
-      window.removeEventListener('resize', onResize);
+      mq.removeEventListener('change', update);
+      window.removeEventListener('resize', update);
     };
   }, []);
 
-  const handleClick = (e, id) => {
-    e.preventDefault();
+  const scrollTo = (id) => {
     const el = document.getElementById(id);
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
@@ -81,76 +77,83 @@ const SideNavbar = () => {
     <AnimatePresence>
       {visible && (
         <motion.aside
-          initial={{ opacity: 0, x: -32, scale: 0.96 }}
-          animate={{ opacity: 1, x: 0, scale: 1 }}
-          exit={{ opacity: 0, x: -32, scale: 0.96 }}
-          transition={{ type: 'spring', stiffness: 220, damping: 32 }}
-          className='hidden lg:flex fixed left-5 inset-y-0 items-center z-[9999] pointer-events-auto'
+          initial={{ opacity: 0, x: -24 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -24 }}
+          transition={{ type: 'spring', stiffness: 240, damping: 30 }}
+          className='hidden lg:flex fixed left-4 inset-y-0 items-center z-[9999] pointer-events-none'
           aria-label='Section navigation'
         >
-          <div className='backdrop-blur-md bg-white/70 border border-black/10 shadow-xl rounded-2xl p-1.5 flex flex-col items-center gap-1.5 transition-all duration-300 min-w-[48px]'>
-            <a
-              href='#'
-              onClick={(e) => {
-                e.preventDefault();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className='rounded-2xl overflow-hidden border border-black/10 dark:border-white/10 shadow-xl bg-white/60 dark:bg-black/30 backdrop-blur-md flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-2xl'
-              style={{
-                boxShadow: '0 2px 16px 0 rgba(0,0,0,0.10)',
-                background: 'linear-gradient(90deg,rgba(0,0,0,0.04),rgba(0,0,0,0.10) 100%)',
-                backdropFilter: 'blur(2px)'
-              }}
-            >
-              <img src={wolfcave} alt='Home' width='44' height='44' className='w-11 h-11 object-contain drop-shadow-[0_1px_4px_rgba(0,0,0,0.10)]' />
-            </a>
-            <div className='w-[2px] h-4 bg-black/20 rounded-full' />
-            <LanguageToggle size='sidebarMini' orientation='vertical' />
-            <div className='w-[2px] h-4 bg-black/20 rounded-full' />
-            <ul className='flex flex-col items-center gap-2'>
-              {navLinks.map((n) => {
-                const label = n.title[language] ?? n.title.en ?? n.id;
-                const isActive = active === n.id;
-                return (
-                  <li key={n.id}>
-                    <a
-                      href={`#${n.id}`}
-                      onClick={(e) => handleClick(e, n.id)}
-                      className={`group relative flex items-center gap-2 py-2 px-2 rounded-xl transition-all duration-300
-                        ${isActive
-                          ? 'bg-white/70 dark:bg-black/40 text-black dark:text-white shadow-2xl backdrop-blur-md scale-110 ring-2 ring-black/10 dark:ring-white/10'
-                          : 'bg-transparent text-black dark:text-white hover:bg-black/10 dark:hover:bg-white/10 hover:scale-105 hover:shadow-lg'}
-                      `}
-                      style={isActive ? {
-                        boxShadow: '0 4px 24px 0 rgba(0,0,0,0.12)',
-                        background: 'linear-gradient(90deg,rgba(0,0,0,0.04),rgba(0,0,0,0.10) 100%)',
-                        backdropFilter: 'blur(2px)'
-                      } : {}}
-                    >
-                      <span className={`inline-block w-2.5 h-2.5 rounded-full transition-all duration-200 ${isActive ? 'bg-black dark:bg-white scale-125 shadow' : 'bg-black dark:bg-white/60'}`} />
-                      <span className='pointer-events-none absolute left-[38px] whitespace-nowrap rounded-md px-2 py-1 text-xs font-medium bg-black text-white opacity-0 translate-x-[-6px] group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150'>
-                        {label}
-                      </span>
-                    </a>
-                  </li>
-                );
-              })}
-            </ul>
-            <div className='w-[2px] h-4 bg-black/20 rounded-full' />
-            <a
-              href='https://www.linkedin.com/in/zackisaza/'
-              target='_blank'
-              rel='noopener noreferrer'
-              className='hover:scale-110 transition-transform duration-200'
-            >
-              <img src={linkIcon} width='28' height='28' alt='LinkedIn' />
-            </a>
+          <div className='flex items-stretch gap-2 pointer-events-auto'>
+            {/* Scroll progress rail */}
+            <div className='relative w-1 rounded-full bg-black/10 overflow-hidden'>
+              <motion.div
+                className='absolute inset-x-0 top-0 h-full rounded-full bg-tertiary origin-top'
+                style={{ scaleY: scrollYProgress }}
+              />
+            </div>
+
+            {/* Dock — compact by default, reveals labels on hover */}
+            <div className='group flex flex-col items-stretch gap-1 rounded-2xl border border-black/[0.06] bg-white/80 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] p-2'>
+              {/* Home */}
+              <button
+                type='button'
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                aria-label='Home'
+                className='flex items-center justify-center rounded-xl p-1 hover:bg-black/[0.05] transition-colors duration-200 hover:scale-105'
+              >
+                <img src={wolfcave} alt='Home' width='36' height='36' className='w-9 h-9 object-contain' />
+              </button>
+
+              <span className='h-px w-full bg-black/10 my-0.5' />
+
+              {/* Section navigation */}
+              <ul className='flex flex-col gap-0.5 list-none'>
+                {navLinks.map((n) => {
+                  const label = n.title[language] ?? n.title.en ?? n.id;
+                  const isActive = active === n.id;
+                  return (
+                    <li key={n.id}>
+                      <a
+                        href={`#${n.id}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          scrollTo(n.id);
+                        }}
+                        className={`group/item relative flex items-center gap-2.5 rounded-lg pl-1.5 pr-2 py-1.5 transition-colors duration-200
+                          ${isActive ? 'bg-tertiary/10' : 'hover:bg-black/[0.04]'}`}
+                      >
+                        <span
+                          className={`shrink-0 rounded-full transition-all duration-200
+                            ${isActive
+                              ? 'w-2.5 h-2.5 bg-tertiary shadow-[0_0_0_3px_rgba(139,17,32,0.15)]'
+                              : 'w-2 h-2 bg-black-100/30 group-hover/item:bg-tertiary/70'}`}
+                        />
+                        <span
+                          className={`whitespace-nowrap text-[13px] font-semibold pr-1
+                            ${isActive ? 'text-tertiary' : 'text-black-100/80 group-hover/item:text-black-100'}`}
+                        >
+                          {label}
+                        </span>
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+
+              <span className='h-px w-full bg-black/10 my-0.5' />
+
+              {/* Language */}
+              <div className='flex justify-center pt-0.5'>
+                <LanguageToggle size='sidebarMini' />
+              </div>
+            </div>
           </div>
         </motion.aside>
       )}
     </AnimatePresence>
   );
-  
+
   if (!portalTarget) return null;
   return createPortal(aside, portalTarget);
 };

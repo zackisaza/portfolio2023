@@ -1,6 +1,6 @@
 import { Tilt } from "react-tilt";
-import { motion } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { motion, useTransform, useMotionValue, animate, AnimatePresence } from "framer-motion";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { styles } from "../styles";
 import { SectionWrapper } from "../hoc";
 import { servicesShowcase } from "../constants";
@@ -22,6 +22,15 @@ import {
 import { fadeIn, textVariant } from "../utils/motion";
 import { useLanguage } from "../context/LanguageContext";
 import Typewriter from "./Typewriter";
+import BoosterBox3D from "./BoosterBox3D";
+import pokemonLogo from "../assets/pokemon/pokemon-logo.png";
+// Tiny pixel sprites for the "evolution" badge box (cut from the Kanto sheet)
+import evo0 from "../assets/pokemon/kanto/000.png";
+import evo1 from "../assets/pokemon/kanto/024.png";
+import evo2 from "../assets/pokemon/kanto/003.png";
+import evo3 from "../assets/pokemon/kanto/006.png";
+import evo4 from "../assets/pokemon/kanto/008.png";
+import evo5 from "../assets/pokemon/kanto/038.png";
 
 const pickType = (name) => {
   const n = (name || "").toLowerCase();
@@ -52,13 +61,103 @@ const pokemonTypes = [
 	{ name: { en: 'Fairy', es: 'Hada' }, icon: typeFairy, secondIcon: null, color: 'fairy' },       // Togepi
 ];
 
-const ProjectCard = ({ index, name, description, highlights, icon }) => {
+// Small "evolution" badge (tiny pixel sprite + name) shown top-left over the art.
+const evoData = [
+	{ sprite: evo0, name: "Bulbasaur" },
+	{ sprite: evo1, name: "Pikachu" },
+	{ sprite: evo2, name: "Charmander" },
+	{ sprite: evo3, name: "Squirtle" },
+	{ sprite: evo4, name: "Blastoise" },
+	{ sprite: evo5, name: "Jigglypuff" },
+];
+
+// Pokédex-style height/weight per card, to match a real card's art caption.
+const dexData = [
+	{ ht: "0,7 m", wt: "6,9 kg" },
+	{ ht: "0,4 m", wt: "6,0 kg" },
+	{ ht: "0,6 m", wt: "8,5 kg" },
+	{ ht: "0,5 m", wt: "9,0 kg" },
+	{ ht: "1,5 m", wt: "40,0 kg" },
+	{ ht: "0,3 m", wt: "1,5 kg" },
+];
+
+// Official-style TCG energy symbols, drawn inline as SVG (colored disc + white
+// glyph + a soft top highlight) so they read like real energy icons.
+const ENERGY_BG = { grass: '#63bb52', electric: '#f4c73b', fire: '#e0512e', water: '#4d9be6', fairy: '#e88ec0', colorless: '#ded7c7' };
+const ENERGY_GLYPH = {
+	electric: 'M13 2 L7 13 H11 L10 22 L18 9 H13 Z',
+	fire: 'M12 2 C13 6 17 7 15 12 C18 11 17.5 16 12 21 C7.5 17.5 6 15 8 11 C9 13 10 12 10 10 C10 6.5 12 6 12 2 Z',
+	water: 'M12 3 C12 3 6 11 6 15 A6 6 0 0 0 18 15 C18 11 12 3 12 3 Z',
+	grass: 'M6.5 18 C6.5 10 12 4.5 19 5 C19.5 12 14 18.5 6.5 18 Z',
+	fairy: 'M12 3 C12.6 8 16 11.4 21 12 C16 12.6 12.6 16 12 21 C11.4 16 8 12.6 3 12 C8 11.4 11.4 8 12 3 Z',
+	colorless: 'M12 3 L14 9 L20.2 9 L15.2 13 L17 20 L12 16 L7 20 L8.8 13 L3.8 9 L10 9 Z',
+};
+const EnergySymbol = ({ type = 'colorless', size = 20 }) => {
+	const bg = ENERGY_BG[type] || ENERGY_BG.colorless;
+	const d = ENERGY_GLYPH[type] || ENERGY_GLYPH.colorless;
+	const glyphFill = type === 'colorless' ? '#8a7d61' : '#ffffff';
+	return (
+		<svg width={size} height={size} viewBox='0 0 24 24' className='energy-sym' aria-hidden='true'>
+			<circle cx='12' cy='12' r='11' fill={bg} stroke='rgba(40,25,5,0.45)' strokeWidth='1.2' />
+			<ellipse cx='8.4' cy='7.6' rx='4.2' ry='2.4' fill='rgba(255,255,255,0.45)' />
+			<path d={d} fill={glyphFill} stroke='rgba(40,25,5,0.28)' strokeWidth='0.5' />
+		</svg>
+	);
+};
+
+const ProjectCard = ({ index, name, description, highlights, icon, deal, gridRef }) => {
 	const { language } = useLanguage();
 	const containerRef = useRef(null);
 	const cardRef = useRef(null);
 	const hoverAreaRef = useRef(null);
 	const [inView, setInView] = useState(false);
-	const [flipped, setFlipped] = useState(false);
+
+	// --- Scroll-driven "deal from the deck" ---
+	// Measure this card's offset from the deck centre (the grid centre) so the
+	// whole hand can converge to one stacked point at scroll progress 0 and fan
+	// out to its natural grid slot at progress 1. Disabled on small screens and
+	// when the user prefers reduced motion.
+	const [origin, setOrigin] = useState({ dx: 0, dy: 0, on: false });
+	useLayoutEffect(() => {
+		const measure = () => {
+			const grid = gridRef?.current;
+			const el = containerRef.current;
+			if (!grid || !el) return;
+			const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+			if (reduce || window.innerWidth < 640) {
+				setOrigin({ dx: 0, dy: 0, on: false });
+				return;
+			}
+			// offset* is layout position (ignores the deal transform), so this
+			// stays correct even if a resize fires mid-animation.
+			const cx = el.offsetLeft + el.offsetWidth / 2 - grid.clientWidth / 2;
+			const cy = el.offsetTop + el.offsetHeight / 2 - grid.clientHeight / 2;
+			setOrigin({ dx: -cx, dy: -cy, on: true });
+		};
+		measure();
+		window.addEventListener("resize", measure);
+		return () => window.removeEventListener("resize", measure);
+	}, [gridRef]);
+
+	// Per-card eased progress with a stagger, plus a brief shuffle wobble.
+	const easeOut = (p) => 1 - Math.pow(1 - Math.min(1, Math.max(0, p)), 3);
+	const dealt = (p) => {
+		const start = (index % 6) * 0.1; // wider stagger → clearer one-by-one deal
+		return easeOut((p - start) / 0.5);
+	};
+	// Longer shuffle wobble as each card flies out of the pack.
+	const wobble = (p) => (p < 0.34 ? Math.sin(p * 32 + index * 1.7) * (0.34 - p) * 30 : 0);
+	const stackAngle = (index - 2.5) * 4; // fanned-deck tilt
+
+	const dx = useTransform(deal, (p) => (origin.on ? origin.dx * (1 - dealt(p)) : 0));
+	const dy = useTransform(deal, (p) => (origin.on ? origin.dy * (1 - dealt(p)) : 0));
+	const rotate = useTransform(deal, (p) => (origin.on ? stackAngle * (1 - dealt(p)) + wobble(p) : 0));
+	const scale = useTransform(deal, (p) => (origin.on ? 0.84 + 0.16 * dealt(p) : 1));
+	const dealOpacity = useTransform(deal, (p) => (origin.on ? Math.min(1, dealt(p) * 1.6) : 1));
+	// Separate flip states for desktop and mobile so toggling one card
+	// on one input method doesn't interfere with the other input method.
+	const [flippedDesktop, setFlippedDesktop] = useState(false);
+	const [flippedMobile, setFlippedMobile] = useState(false);
 	// Detectar si es móvil/touch
 	const [isTouch, setIsTouch] = useState(false);
 	// iOS gyro permission request guard
@@ -100,6 +199,34 @@ const ProjectCard = ({ index, name, description, highlights, icon }) => {
 	// Assign a fun HP value based on text length to keep it themed
 	const hp = Math.min(180, 90 + Math.round((name?.length || 10) * 3));
 	const rafRef = useRef(null);
+
+	// Tilt options: disable movement on touch devices so mobile only flips on tap
+	const tiltOptions = isTouch ? {
+		max: 0,
+		scale: 1,
+		speed: 450,
+		gyroscope: false,
+	} : {
+		max: 45,
+		scale: 1,
+		speed: 450,
+		gyroscope: true,
+		gyroscopeMinAngleX: -15,
+		gyroscopeMaxAngleX: 15,
+		gyroscopeMinAngleY: -15,
+		gyroscopeMaxAngleY: 15,
+	};
+
+	// Wrapper component: use a plain div on touch devices to avoid react-tilt
+	const WrapperComponent = isTouch ? 'div' : Tilt;
+	const wrapperProps = isTouch ? {} : { options: tiltOptions };
+	// Touch tap detection to distinguish tap vs swipe on mobile
+	const touchStartRef = useRef({ x: 0, y: 0, time: 0 });
+	const touchMovedRef = useRef(false);
+	const TAP_MAX_MOVEMENT = 10; // px
+	const TAP_MAX_DURATION = 400; // ms
+	// Recent touch timestamp to suppress the subsequent synthetic click event
+	const recentTouchRef = useRef(0);
 	// Dimensiones fijas de referencia para el cálculo del hover (360x620px)
 	const CARD_BASE_WIDTH = 360;
 	const CARD_BASE_HEIGHT = 620;
@@ -134,6 +261,40 @@ const ProjectCard = ({ index, name, description, highlights, icon }) => {
 			el.style.setProperty("--sx", `${50 + (x - 0.5) * 10}%`);
 			el.style.setProperty("--sy", `${50 + (y - 0.5) * 10}%`);
 		});
+	};
+
+	// Touch handlers moved to the hover-area container so touches are
+	// intercepted there instead of on the card element itself.
+	const handleTouchStart = (e) => {
+		if (!isTouch) return;
+		const t = e.touches && e.touches[0];
+		if (t) {
+			touchStartRef.current = { x: t.clientX, y: t.clientY, time: Date.now() };
+			touchMovedRef.current = false;
+		}
+		// Ask for gyro permission on first touch
+		requestGyroPermission();
+	};
+
+	const handleTouchMove = (e) => {
+		if (!isTouch) return;
+		const t = e.touches && e.touches[0];
+		if (!t) return;
+		const dx = Math.abs(t.clientX - touchStartRef.current.x);
+		const dy = Math.abs(t.clientY - touchStartRef.current.y);
+		if (dx > TAP_MAX_MOVEMENT || dy > TAP_MAX_MOVEMENT) touchMovedRef.current = true;
+	};
+
+	const handleTouchEnd = (e) => {
+		if (!isTouch) return;
+		const dur = Date.now() - (touchStartRef.current.time || 0);
+		if (!touchMovedRef.current && dur < TAP_MAX_DURATION) {
+			if (e.cancelable) e.preventDefault();
+			e.stopPropagation();
+			setFlippedMobile((v) => !v);
+			// mark the recent touch so the following click (if any) is ignored
+			recentTouchRef.current = Date.now();
+		}
 	};
 
 	const handleEnter = () => {
@@ -209,60 +370,61 @@ const ProjectCard = ({ index, name, description, highlights, icon }) => {
 			}
 		};
 	}, []);
+
+	// Derived flip state depending on input method (desktop vs mobile)
+	const isFlipped = isTouch ? flippedMobile : flippedDesktop;
 	
 	return (
 		<motion.div
 			ref={containerRef}
-			variants={fadeIn("up", "spring", index * 0.2, 0.5)}
 			className='sm:w-[calc(33.333%-32px)] w-full px-4 sm:px-0 h-full will-change-transform relative'
-			style={{ perspective: '1000px' }}>
+			style={{ perspective: '1000px', x: dx, y: dy, rotate, scale, opacity: dealOpacity, zIndex: 6 - (index % 6) }}>
 			
 			{/* Tap to flip indicator - mobile only */}
-			<motion.div 
-				className='absolute -bottom-8 left-1/2 transform -translate-x-1/2 sm:hidden z-10 pointer-events-none'
-				initial={{ opacity: 0, y: -10 }}
-				animate={{ 
-					opacity: [0.5, 1, 0.5],
-					y: [0, -5, 0]
+			<motion.div
+				className='absolute -bottom-10 left-1/2 transform -translate-x-1/2 sm:hidden z-20 pointer-events-none'
+				initial={{ opacity: 0, y: -8, scale: 0.98 }}
+				animate={{
+					opacity: [0, 1, 0.85, 1],
+					y: [0, -6, -3, 0],
+					scale: [1, 1.02, 1],
 				}}
 				transition={{
-					duration: 2,
+					duration: 2.2,
 					repeat: Infinity,
-					ease: "easeInOut"
-				}}>
-				<span className='text-white/70 text-xs font-semibold tracking-wider'>
-					{language === 'es' ? '👆 Toca para voltear' : '👆 Tap to flip'}
-				</span>
+					ease: 'easeInOut',
+				}}
+				aria-hidden='true'
+			>
+				<div className='inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 via-purple-500 to-pink-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm/10'>
+					<span className='text-sm leading-none'>👆</span>
+					<span className='leading-tight'>
+						{language === 'es' ? 'Toca para voltear' : 'Tap to flip'}
+					</span>
+				</div>
 			</motion.div>
 
-			<Tilt
-				options={{
-					max: 45,
-					scale: 1,
-					speed: 450,
-					gyroscope: true,
-					gyroscopeMinAngleX: -15,
-					gyroscopeMaxAngleX: 15,
-					gyroscopeMinAngleY: -15,
-					gyroscopeMaxAngleY: 15,
-				}}>
-				{/* Área de hover fija - wrapper estable */}
+			<WrapperComponent {...wrapperProps}>
+				{/* Área de hover fija - wrapper estable (agregada clase para hover del contenedor) */}
 				<div 
 					ref={hoverAreaRef}
 					onMouseMove={isTouch ? undefined : handlePointer}
-					onTouchMove={isTouch ? handlePointer : undefined}
+					onTouchStart={(e) => { if (isTouch) { handleTouchStart(e); } else { handleEnter(e); } }}
+					onTouchMove={(e) => { if (isTouch) handleTouchMove(e); }}
+					onTouchEnd={(e) => { if (isTouch) { handleTouchEnd(e); } else { handleLeave(e); } }}
 					onMouseEnter={isTouch ? undefined : handleEnter}
 					onMouseLeave={isTouch ? undefined : handleLeave}
-						onTouchStart={(e) => { if (isTouch) { requestGyroPermission(); } else { handleEnter(e); } }}
-						onTouchEnd={(e) => { if (!isTouch) { handleLeave(e); } }}
-					className='w-full h-[620px] relative'>
-					<div 
-							className={`tcg-flip-container touch-clean ${flipped ? 'is-flipped' : ''}`}
-							onClick={(e) => { if (!isTouch) { setFlipped((v) => !v); } }}
-							onTouchEnd={(e) => { if (isTouch) { e.preventDefault(); e.stopPropagation(); setFlipped((v)=>!v); } }}
-						onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setFlipped((v) => !v); } }}
-						role='button'
-						tabIndex={0}>
+					className='tcg-hover-area w-full h-[620px] relative'>
+						<div 
+							className={`tcg-flip-container touch-clean ${isFlipped ? 'is-flipped' : ''}`}
+							onClick={(e) => {
+								// Prevent double-toggle: ignore click events that follow a touch toggle
+								if (Date.now() - recentTouchRef.current < 500) return;
+								if (!isTouch) { setFlippedDesktop((v) => !v); }
+							}}
+							onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (isTouch) setFlippedMobile((v) => !v); else setFlippedDesktop((v) => !v); } }}
+							role='button'
+							tabIndex={0}>
 					{/* FRONT CARD */}
 					<motion.div
 						ref={cardRef}
@@ -302,13 +464,18 @@ const ProjectCard = ({ index, name, description, highlights, icon }) => {
 
 							{/* Pokemon Image - Large central image */}
 							<div className='pokemon-image-container'>
+								{/* Evolution badge — tiny pixel sprite, like a real card's evo box */}
+								<div className='pokemon-evo-box'>
+									<span className='evo-thumb'><img src={evoData[index % evoData.length].sprite} alt='' /></span>
+									<span className='evo-label'>{evoData[index % evoData.length].name}</span>
+								</div>
 								<div className='pokemon-image-frame'>
 									<img src={pokemonImages[index % pokemonImages.length]} alt='pokemon' className='pokemon-image' loading='lazy' decoding='async' />
 								</div>
 								{/* Pokedex info bar */}
 								<div className='pokedex-bar'>
-									<span className='text-[9px] text-black/70 font-medium'>
-										N.º 00{index + 1} · Pokémon {pokemonType.name[language]} · {language === 'es' ? 'Servicio' : 'Service'}
+									<span className='pokedex-caption'>
+										N.º 00{index + 1} · Pokémon {pokemonType.name[language]} · {language === 'es' ? 'Altura' : 'HT'} {dexData[index % dexData.length].ht} · {language === 'es' ? 'Peso' : 'WT'} {dexData[index % dexData.length].wt}
 									</span>
 								</div>
 							</div>
@@ -349,8 +516,8 @@ const ProjectCard = ({ index, name, description, highlights, icon }) => {
 										<div key={point} className='pokemon-attack-row'>
 											<div className='flex items-start gap-2 flex-1'>
 												<div className='flex items-center gap-1'>
-													<img src={pokemonType.icon} alt='energy' className='w-5 h-5' />
-													{i > 0 && <img src={pokemonType.icon} alt='energy' className='w-5 h-5' />}
+													<EnergySymbol type={pokemonType.color} size={20} />
+													{i > 0 && <EnergySymbol type={pokemonType.color} size={20} />}
 												</div>
 												<div className='flex-1'>
 													<div className='pokemon-attack-name'>{attackName}</div>
@@ -371,7 +538,7 @@ const ProjectCard = ({ index, name, description, highlights, icon }) => {
 									<div className='pokemon-stat'>
 										<span className='stat-label'>{language === 'es' ? 'Debilidad' : 'Weakness'}</span>
 										<div className='flex items-center gap-1'>
-											<img src={pokemonType.icon} alt='weakness' className='w-5 h-5 opacity-50' />
+											<EnergySymbol type={pokemonType.color} size={17} />
 											<span className='stat-value'>×2</span>
 										</div>
 									</div>
@@ -381,7 +548,7 @@ const ProjectCard = ({ index, name, description, highlights, icon }) => {
 									</div>
 									<div className='pokemon-stat'>
 										<span className='stat-label'>{language === 'es' ? 'Retirada' : 'Retreat'}</span>
-										<img src={pokemonType.icon} alt='retreat' className='w-5 h-5 opacity-30' />
+										<EnergySymbol type='colorless' size={17} />
 									</div>
 								</div>
 								
@@ -389,6 +556,9 @@ const ProjectCard = ({ index, name, description, highlights, icon }) => {
 								<div className='pokemon-flavor-text'>
 									<Typewriter content={description} speed={20} startDelay={160} cursor={false} />
 								</div>
+
+								{/* Illustrator credit, like real TCG cards */}
+								<div className='pokemon-illus'>{language === 'es' ? 'Ilus.' : 'Illus.'} Z. Isaza</div>
 
 								{/* Card number and rarity */}
 								<div className='pokemon-card-info'>
@@ -529,13 +699,100 @@ const ProjectCard = ({ index, name, description, highlights, icon }) => {
 					</motion.div>
 				</div>
 				</div>
-			</Tilt>
+				</WrapperComponent>
 		</motion.div>
 	);
 };
 
+// Closed TCG booster pack that covers the deck. Clicking it rips it open
+// (top strip tears off, body splits) and unmounts, revealing the shuffling hand.
+const packVariants = {
+	initial: { opacity: 0, scale: 0.92 },
+	float: {
+		opacity: 1,
+		scale: 1,
+		y: [0, -12, 0],
+		rotate: [-1, 1, -1],
+		transition: {
+			opacity: { duration: 0.4 },
+			scale: { duration: 0.4 },
+			y: { repeat: Infinity, duration: 4, ease: "easeInOut" },
+			rotate: { repeat: Infinity, duration: 6, ease: "easeInOut" },
+		},
+	},
+	// Parent stays until the pieces finish ripping, then fades out.
+	tear: { opacity: 0, transition: { duration: 0.5, delay: 1.7 } },
+};
+// A wind-up (a small tug) then the crimped top strip tears off, then the two
+// halves slowly peel apart — all drawn out so the rip is easy to follow.
+const flapVariants = {
+	tear: { y: [0, 8, -340], rotate: [0, 2, -16], opacity: [1, 1, 0], transition: { duration: 1.1, times: [0, 0.22, 1], ease: "easeIn" } },
+};
+const halfLVariants = {
+	tear: { x: ["0%", "1.5%", "-46%"], y: [0, 0, 70], rotate: [0, 1.5, -14], opacity: [1, 1, 0], transition: { duration: 1.35, times: [0, 0.3, 1], ease: "easeIn", delay: 0.35 } },
+};
+const halfRVariants = {
+	tear: { x: ["0%", "-1.5%", "46%"], y: [0, 0, 70], rotate: [0, -1.5, 14], opacity: [1, 1, 0], transition: { duration: 1.35, times: [0, 0.3, 1], ease: "easeIn", delay: 0.35 } },
+};
+const contentVariants = { tear: { opacity: 0, scale: 0.72, transition: { duration: 0.55, delay: 0.4 } } };
+
+const CardPack = ({ onOpen, language }) => (
+	<motion.button
+		type='button'
+		className='card-pack'
+		onClick={onOpen}
+		aria-label={language === 'es' ? 'Abrir el sobre de cartas' : 'Open the card pack'}
+		variants={packVariants}
+		initial='initial'
+		animate='float'
+		exit='tear'
+		whileHover={{ scale: 1.03 }}
+		whileTap={{ scale: 0.99 }}
+	>
+		<motion.span className='pack-piece pack-half pack-half-l' variants={halfLVariants} aria-hidden='true' />
+		<motion.span className='pack-piece pack-half pack-half-r' variants={halfRVariants} aria-hidden='true' />
+		<span className='pack-fold' aria-hidden='true' />
+		<span className='pack-bulge' aria-hidden='true' />
+		<span className='pack-shine' aria-hidden='true' />
+		<motion.span className='pack-piece pack-top' variants={flapVariants} aria-hidden='true' />
+		<span className='pack-bottom' aria-hidden='true' />
+		<motion.span className='pack-content' variants={contentVariants}>
+			<img className='pack-logo' src={pokemonLogo} alt='Pokémon' draggable='false' />
+			<span className='pack-tcg'>TRADING CARD GAME</span>
+			<span className='pack-emblem'><span className='pack-ball' /></span>
+			<span className='pack-set'>
+				<b>PORTFOLIO</b>
+				<i>SERVICES</i>
+			</span>
+			<span className='pack-count'>6 GAME CARDS</span>
+		</motion.span>
+		<span className='pack-hint'>{language === 'es' ? '✦ Tocá para abrir ✦' : '✦ Click to open ✦'}</span>
+	</motion.button>
+);
+
 const Works = () => {
 	const { t, language } = useLanguage();
+	const gridRef = useRef(null);
+
+	// A booster pack covers the deck until clicked. On small screens or with
+	// reduced motion we skip the pack and just show the dealt cards.
+	const [opened, setOpened] = useState(() => {
+		if (typeof window === "undefined") return false;
+		return (
+			window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+			window.innerWidth < 640
+		);
+	});
+	// 0 = cards stacked/hidden inside the pack, 1 = fully dealt into the grid.
+	const openProgress = useMotionValue(opened ? 1 : 0);
+
+	const handleOpen = () => {
+		if (opened) return;
+		setOpened(true);
+		// Long, appreciable sequence: the pack rips (~1s) then the hand shuffles
+		// out over a slow, staggered cascade.
+		animate(openProgress, 1, { duration: 3, ease: [0.22, 1, 0.36, 1], delay: 0.9 });
+	};
 
 	return (
 			<>
@@ -552,7 +809,7 @@ const Works = () => {
 					<Typewriter rich content={t("works.description")} speed={22} startDelay={180} />
 				</motion.p>
 			</div>
-			<div className='mt-10 sm:mt-6 md:mt-20 flex flex-wrap gap-16 sm:gap-12 justify-center items-stretch'>
+			<div ref={gridRef} className='relative mt-16 sm:mt-6 md:mt-20 flex flex-wrap gap-16 sm:gap-12 justify-center items-stretch'>
 				{servicesShowcase.map((service, index) => {
 					const localized =
 						service.translations[language] ?? service.translations.en;
@@ -564,9 +821,15 @@ const Works = () => {
 							description={localized.description}
 							highlights={localized.highlights}
 							icon={service.icon}
+							deal={openProgress}
+							gridRef={gridRef}
 						/>
 					);
 				})}
+
+				<AnimatePresence>
+					{!opened && <BoosterBox3D key='box' onOpen={handleOpen} language={language} />}
+				</AnimatePresence>
 			</div>
 		</>
 	);

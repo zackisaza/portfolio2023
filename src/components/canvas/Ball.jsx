@@ -347,12 +347,61 @@ const Ball = ({
 };
 
 const BallCanvas = ({ icon, externalDeltaRef = null, decalRotation, decalScale, geometry, decalPosition, icoDetail, baseColor, metalness, roughness, emissiveColor = '#ffffff', emissiveMultiplier = 1, visible = true }) => {
+	const canvasElRef = useRef(null);
+	const cleanupRef = useRef(null);
+
+	useEffect(() => {
+		return () => {
+			if (cleanupRef.current) {
+				try {
+					cleanupRef.current();
+				} catch (e) {
+					// swallow cleanup errors
+				}
+			}
+		};
+	}, []);
+
 	return (
 		<Canvas
 			shadows={false}
-			frameloop='always'
+			frameloop={visible ? 'always' : 'demand'}
 			dpr={[1, 1.5]}
 			camera={{ position: [0, 0, 12], fov: 45 }}
+			onCreated={(state) => {
+				try {
+					const renderer = state.gl;
+					const canvas = renderer.domElement;
+					canvasElRef.current = canvas;
+
+					const onLost = (e) => {
+						// prevent default to avoid browser's default handling
+						try { e.preventDefault(); } catch (err) {}
+						// log a single handled message so it doesn't spam
+						console.warn('WebGL context lost (handled)');
+					};
+
+					const onRestore = () => {
+						console.info('WebGL context restored');
+					};
+
+					canvas.addEventListener('webglcontextlost', onLost, false);
+					canvas.addEventListener('webglcontextrestored', onRestore, false);
+
+					cleanupRef.current = () => {
+						try {
+							canvas.removeEventListener('webglcontextlost', onLost);
+							canvas.removeEventListener('webglcontextrestored', onRestore);
+						} catch (err) {}
+						try {
+							// attempt a safe dispose of renderer resources
+							if (renderer && typeof renderer.dispose === 'function') renderer.dispose();
+						} catch (err) {}
+					};
+				} catch (err) {
+					// ignore onCreated errors
+				}
+			}}
 			gl={{ preserveDrawingBuffer: false, alpha: true, antialias: false, powerPreference: 'high-performance' }}
 			style={{ width: "100%", height: "100%", background: "transparent" }}>
 			<Suspense fallback={<CanvasLoader />}>

@@ -1,13 +1,62 @@
 import { Suspense, useEffect, useRef, useState } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import * as THREE from 'three';
 import { OrbitControls, Preload, useGLTF, AdaptiveDpr } from "@react-three/drei";
 
 import CanvasLoader from "../Loader";
 import { useCanvasBudget } from "../../context/CanvasBudgetContext";
 
-const Computers = ({ isMobile, visible = true }) => {
+const Computers = ({ isMobile, visible = true, isInteractingRef = null }) => {
 	const computer = useGLTF("./desktop_pc/scene.gltf");
 	const computerGroup = useRef();
+
+	// Mobile-only pointer-driven rotation state (does not affect desktop)
+	const rotVel = useRef(0);
+	const lastPos = useRef({ x: 0 });
+
+	const handlePointerMove = (e) => {
+		if (!isMobile) return;
+		let mx = e.movementX ?? e.nativeEvent?.movementX;
+		if (mx === undefined) {
+			const cx = e.clientX ?? e.nativeEvent?.clientX ?? lastPos.current.x;
+			mx = cx - lastPos.current.x;
+			lastPos.current.x = cx;
+		}
+		const sensitivity = 0.004; // tweak to taste
+		rotVel.current += -mx * sensitivity;
+		try { e.stopPropagation(); } catch (err) {}
+	};
+
+	const handlePointerOver = (e) => {
+		if (!isMobile) return;
+		lastPos.current.x = e.clientX ?? e.nativeEvent?.clientX ?? lastPos.current.x;
+		try { e.stopPropagation(); } catch (err) {}
+	};
+
+	const handlePointerOut = (e) => {
+		if (!isMobile) return;
+		try { e.stopPropagation(); } catch (err) {}
+	};
+
+	// Ensure the initial transform on mount matches the intended layout for
+	// mobile vs desktop. This forces the group's position/rotation/scale so any
+	// earlier changes or touch-driven deltas don't leave the model in a wrong
+	// initial pose when the component mounts or when viewport switches.
+	useEffect(() => {
+		try {
+			if (!computerGroup.current) return;
+			if (isMobile) {
+				// mobile: remove forward tilt (rotation.x) so the model starts upright
+				computerGroup.current.position.set(-0.1, -3, -1.5);
+				computerGroup.current.rotation.set(0, -0.8, 0);
+				computerGroup.current.scale.set(0.375, 0.375, 0.375);
+			} else {
+				computerGroup.current.position.set(1, -3, -1.5);
+				computerGroup.current.rotation.set(0.02, -0.8, 0);
+				computerGroup.current.scale.set(0.6, 0.6, 0.6);
+			}
+		} catch (err) {}
+	}, [isMobile, computer]);
 
 	useFrame(({ clock }) => {
 		if (!computerGroup.current) return;
@@ -25,7 +74,11 @@ const Computers = ({ isMobile, visible = true }) => {
 		// animate position.y (start lower and ease up; slide up when hiding)
 		// when hiding, move the model upward off-screen
 		const targetY = visible ? -2 : 4;
-		computerGroup.current.position.y += (targetY - computerGroup.current.position.y) * ease;
+		// If the user is interacting with OrbitControls (desktop drag), avoid
+		// updating the group's Y position so it doesn't jump/slide while dragging.
+		if (!(isInteractingRef && isInteractingRef.current)) {
+			computerGroup.current.position.y += (targetY - computerGroup.current.position.y) * ease;
+		}
 
 		// animate rotation toward base + sway (or more tilted when hidden)
 		const baseRotX = 0.02;
@@ -33,6 +86,15 @@ const Computers = ({ isMobile, visible = true }) => {
 		computerGroup.current.rotation.x += (baseRotX - computerGroup.current.rotation.x) * ease;
 		computerGroup.current.rotation.y += (baseRotY - computerGroup.current.rotation.y) * ease;
 		computerGroup.current.rotation.z += (0 - computerGroup.current.rotation.z) * ease;
+
+		// apply mobile-only pointer-driven rotation velocity and decay it
+		try {
+			if (isMobile) {
+				computerGroup.current.rotation.y += rotVel.current;
+				rotVel.current *= 0.92;
+				if (Math.abs(rotVel.current) < 1e-5) rotVel.current = 0;
+			}
+		} catch (err) {}
 	});
 
 	return (
@@ -53,7 +115,22 @@ const Computers = ({ isMobile, visible = true }) => {
 				// start smaller, lower and slightly rotated so the entrance animation is visible
 				scale={[isMobile ? 0.375 : 0.6, isMobile ? 0.375 : 0.6, isMobile ? 0.375 : 0.6]}
 				position={isMobile ? [-0.1, -3, -1.5] : [1, -3, -1.5]}
-				rotation={[0.02, -0.8, 0]}>
+				rotation={[isMobile ? 0 : 0.02, -0.8, 0]}>
+				{isMobile && (
+					// Invisible plane captures horizontal pointer moves on mobile only.
+					// We stopPropagation for these events but do NOT call preventDefault,
+					// so vertical swipes still scroll the page.
+					<mesh
+						position={[0, 0, 0]}
+						frustumCulled={false}
+						onPointerOver={handlePointerOver}
+						onPointerOut={handlePointerOut}
+						onPointerMove={handlePointerMove}
+					>
+						<planeGeometry args={[20, 20]} />
+						<meshBasicMaterial transparent opacity={0} depthWrite={false} side={2} />
+					</mesh>
+				)}
 				<primitive object={computer.scene} />
 			</group>
 		</mesh>
@@ -62,6 +139,93 @@ const Computers = ({ isMobile, visible = true }) => {
 
 const ComputersCanvas = ({ active = true, sectionIndex = 0 }) => {
 	const { suspendAboveOf, exclusiveSection } = useCanvasBudget();
+	const canvasElRef = useRef(null);
+	const cleanupRef = useRef(null);
+	const controlsRef = useRef();
+	const isInteractingRef = useRef(false);
+
+	// Component to handle smooth return of camera/controls after desktop drag
+	const ControlsHandler = ({ controlsRef, isInteractingRef }) => {
+		const { camera } = useThree();
+		const rafRef = useRef(null);
+		const animRef = useRef(null);
+
+		useEffect(() => {
+			let controls = controlsRef.current;
+			if (!controls) return;
+
+			const initialCamPos = camera.position.clone();
+			const initialTarget = controls.target.clone();
+
+			// Gentle "back" easing with small overshoot for a soft bounce on release.
+			// c1 controls overshoot amplitude; lower -> softer overshoot.
+			const easeOutBack = (t) => {
+				const c1 = 0.6; // small overshoot (was 1.70158 for stronger bounce)
+				const c3 = c1 + 1;
+				return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+			};
+
+			let running = false;
+			let startTime = 0;
+			let duration = 600; // ms - adjust to taste (longer = softer)
+			let fromPos = new THREE.Vector3();
+			let fromTarget = new THREE.Vector3();
+
+			const step = (now) => {
+				if (!running) return;
+				const t = Math.min(1, (now - startTime) / duration);
+				const eased = easeOutBack(t);
+				camera.position.lerpVectors(fromPos, initialCamPos, eased);
+				controls.target.lerpVectors(fromTarget, initialTarget, eased);
+				controls.update();
+				if (t >= 1) {
+					running = false;
+					return;
+				}
+				rafRef.current = requestAnimationFrame(step);
+			};
+
+			const onStart = () => {
+				// mark interacting so the scene can pause certain auto-animations
+				if (isInteractingRef) isInteractingRef.current = true;
+				// cancel any running animation
+				running = false;
+				if (rafRef.current) cancelAnimationFrame(rafRef.current);
+			};
+
+			const onEnd = () => {
+				// unmark interacting so the scene can resume auto-animations;
+				if (isInteractingRef) isInteractingRef.current = false;
+				// start animation back to initial
+				fromPos.copy(camera.position);
+				fromTarget.copy(controls.target);
+				running = true;
+				startTime = performance.now();
+				if (rafRef.current) cancelAnimationFrame(rafRef.current);
+				rafRef.current = requestAnimationFrame(step);
+			};
+
+			controls.addEventListener('start', onStart);
+			controls.addEventListener('end', onEnd);
+
+			return () => {
+				controls.removeEventListener('start', onStart);
+				controls.removeEventListener('end', onEnd);
+				if (rafRef.current) cancelAnimationFrame(rafRef.current);
+			};
+		}, [controlsRef, isInteractingRef]);
+		return null;
+	};
+
+	useEffect(() => {
+		return () => {
+			if (cleanupRef.current) {
+				try {
+					cleanupRef.current();
+				} catch (e) {}
+			}
+		};
+	}, []);
 	const [isMobile, setIsMobile] = useState(false);
 
 	useEffect(() => {
@@ -120,23 +284,69 @@ const ComputersCanvas = ({ active = true, sectionIndex = 0 }) => {
 	}
 
 	return (
-		<Canvas
-			frameloop='always'
+			<Canvas
+				style={{ touchAction: 'pan-y' }}
+			frameloop={visibleLocal ? 'always' : 'demand'}
 			shadows
 			dpr={[1, 1.25]}
+			onCreated={(state) => {
+				try {
+					const renderer = state.gl;
+					const canvas = renderer.domElement;
+					canvasElRef.current = canvas;
+
+					const onLost = (e) => {
+						try { e.preventDefault(); } catch (err) {}
+						console.warn('WebGL context lost (handled)');
+					};
+
+					const onRestore = () => {
+						console.info('WebGL context restored');
+					};
+
+					// Ensure the canvas element allows vertical scroll on mobile and pinch-zoom
+					try {
+						canvas.style.touchAction = 'pan-y pinch-zoom';
+						canvas.setAttribute('touch-action', 'pan-y pinch-zoom');
+					} catch (err) {}
+
+					canvas.addEventListener('webglcontextlost', onLost, false);
+					canvas.addEventListener('webglcontextrestored', onRestore, false);
+
+					cleanupRef.current = () => {
+						try {
+							canvas.removeEventListener('webglcontextlost', onLost);
+							canvas.removeEventListener('webglcontextrestored', onRestore);
+						} catch (err) {}
+						try {
+							if (renderer && typeof renderer.dispose === 'function') renderer.dispose();
+						} catch (err) {}
+					};
+				} catch (err) {}
+			}}
 			camera={
 				isMobile
-					? { position: [0, 20, 5], fov: 26 }
-					: { position: [9, 17, 5], fov: 26 }
+					? { position: [-5, 20,30], fov: 16 }
+					: { position: [5, 17, 5], fov: 26 }
 			}
 			gl={{ preserveDrawingBuffer: false, antialias: false, powerPreference: 'high-performance' }}>
 			<Suspense fallback={<CanvasLoader />}>
-				<OrbitControls
-					enableZoom={false}
-					maxPolarAngle={Math.PI / 2}
-					minPolarAngle={Math.PI / 2}
-				/>
-				<Computers isMobile={isMobile} visible={visibleLocal} />
+				{!isMobile && (
+					<>
+						<OrbitControls
+							ref={controlsRef}
+							enableZoom={false}
+							// On desktop OrbitControls handles rotate/pan; on mobile we use
+							// custom pointer handlers so we don't block vertical scroll.
+							enableRotate={true}
+							enablePan={true}
+							maxPolarAngle={Math.PI / 2}
+							minPolarAngle={Math.PI / 2}
+						/>
+						<ControlsHandler controlsRef={controlsRef} isInteractingRef={isInteractingRef} />
+					</>
+				)}
+					<Computers isMobile={isMobile} visible={visibleLocal} isInteractingRef={isInteractingRef} />
 			</Suspense>
 			<AdaptiveDpr pixelated />
 			<Preload all />

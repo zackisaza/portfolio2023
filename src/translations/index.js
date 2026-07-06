@@ -8,15 +8,33 @@ export const uiCopy = {
 		},
 		hero: {
 			line1: "Zack",
-			line2: "Zack",
+			line2: "Isaza",
 			subheading: "Senior Software Engineer.",
 			ctaButton: "Check My Startup",
+			availability: "Available for projects",
+			startupLabel: "My startup",
+			startupCta: "See what I build",
 		},
 		about: {
 			subtitle: "Introduction",
 			title: "Overview.",
 			description:
-				"I'm a <b>senior backend engineer</b> focused on designing <b>high-performance</b>, <b>scalable</b>, and <b>secure systems</b>. Specialized in <b>Node.js</b>, <b>TypeScript</b>, <b>NestJS</b>, <b>Express</b>, <b>PHP</b> (Laravel, Symfony), and <b>Python</b> (Django, FastAPI). Skilled in <b>PostgreSQL</b>, <b>MongoDB</b>, <b>Redis</b>, <b>Docker</b>, <b>Kubernetes</b>, and <b>AWS</b>. Experienced in <b>serverless architectures</b>, <b>CI/CD automation</b>, and <b>testing pipelines</b>. Passionate about <b>clean architecture</b>, <b>system observability</b>, and <b>code quality</b>. Strong background in <b>technical leadership</b>, <b>mentoring developers</b>, and delivering <b>reliable backend solutions</b> in 2025.",
+				"I'm a <b>senior software engineer</b> with deep expertise across <b>backend</b>, <b>frontend</b>, and <b>DevOps (CI/CD)</b>. On the backend I design <b>high-performance</b>, <b>scalable</b>, and <b>secure systems</b> with <b>Node.js</b>, <b>TypeScript</b>, <b>NestJS</b>, <b>Express</b>, <b>PHP</b> (Laravel, Symfony), and <b>Python</b> (Django, FastAPI). On the frontend I build modern interfaces with <b>React</b>, <b>TypeScript</b>, and <b>Tailwind</b>. I work fluently with <b>PostgreSQL</b>, <b>MongoDB</b>, <b>Redis</b>, <b>Docker</b>, and <b>Kubernetes</b>, and architect on <b>AWS</b> using <b>serverless</b>, <b>CI/CD automation</b>, and <b>testing pipelines</b>. Passionate about <b>Domain-Driven Design (DDD)</b>, <b>clean architecture</b>, <b>system observability</b>, and <b>code quality</b>, with a strong background in <b>technical leadership</b> and <b>mentoring developers</b>.",
+		},
+		projects: {
+			subtitle: "Things I've shipped",
+			title: "Projects.",
+			description:
+				"A selection of <b>real, production software</b> I've designed and built — from a <b>DIAN electronic-invoicing SaaS</b> to <b>AI-powered</b> and full-stack platforms. Some repositories are private but <b>available for code review on request</b>.",
+			liveLabel: "View site",
+			codeLabel: "View code",
+			privateLabel: "Private repo · code review on request",
+			hoverHint: "▸ HOVER FOR DETAILS",
+			ctrlPrev: "◄ PROJECT",
+			ctrlNext: "PROJECT ►",
+			viewSummary: "SUMMARY",
+			viewTech: "TECH",
+			viewShot: "PREVIEW",
 		},
 		experience: {
 			subtitle: "What I have done so far",
@@ -72,7 +90,7 @@ export const uiCopy = {
 		languagePrompt: {
 			title: "👋 Welcome!",
 			description:
-				"Welcome to my portfolio. I'm <b>Zack Isaza</b>, a <b>Senior Backend Engineer</b> focused on creating <b>scalable</b>, <b>efficient</b>, and <b>secure</b> software systems.\n\nHere you'll find a selection of my <b>work</b>, <b>experience</b>, and recent <b>projects</b>.\n\nIf you or your company need a <b>custom software solution</b>, don't hesitate to reach out — I'd be happy to discuss how I can help.\n\n<b class='text-[#8B0000] font-semibold'>Please select your preferred language to continue:</b>",
+				"Welcome to my portfolio. I'm <b>Zack Isaza</b>, a <b>Senior Software Engineer</b> focused on creating <b>scalable</b>, <b>efficient</b>, and <b>secure</b> software systems.\n\nHere you'll find a selection of my <b>work</b>, <b>experience</b>, and recent <b>projects</b>.\n\nIf you or your company need a <b>custom software solution</b>, don't hesitate to reach out — I'd be happy to discuss how I can help.\n\n<b class='text-[#8B0000] font-semibold'>Please select your preferred language to continue:</b>",
 			tapAnywhere: "Tap anywhere to continue!",
 			clickAnywhere: "Click anywhere to continue!",
 			closingIn: "Closing in {seconds} seconds...",
@@ -87,15 +105,33 @@ export const uiCopy = {
 		},
 		hero: {
 			line1: "Zack",
-			line2: "Zack",
+			line2: "Isaza",
 			subheading: "Ingeniero de Software Sr.",
 			ctaButton: "Conoce Mi Startup",
+			availability: "Disponible para proyectos",
+			startupLabel: "Mi startup",
+			startupCta: "Conoce lo que construyo",
 		},
 		about: {
 			subtitle: "Introducción",
 			title: "Resumen.",
 			description:
-				"Soy un <b>ingeniero backend senior</b> enfocado en diseñar sistemas de <b>alto rendimiento</b>, <b>escalables</b> y <b>seguros</b>. Especialista en <b>Node.js</b>, <b>TypeScript</b>, <b>NestJS</b>, <b>Express</b>, <b>PHP</b> (Laravel, Symfony) y <b>Python</b> (Django, FastAPI). Domino <b>PostgreSQL</b>, <b>MongoDB</b>, <b>Redis</b>, <b>Docker</b>, <b>Kubernetes</b> y <b>AWS</b>. Tengo experiencia en <b>arquitecturas serverless</b>, <b>automatización CI/CD</b> y <b>pipelines de pruebas</b>. Apasionado por la <b>arquitectura limpia</b>, la <b>observabilidad de sistemas</b> y la <b>calidad del código</b>. Con amplia trayectoria en <b>liderazgo técnico</b>, <b>mentoría de desarrolladores</b> y entrega de <b>soluciones backend confiables</b> en 2025.",
+				"Soy un <b>ingeniero de software senior</b> con profunda experiencia en <b>backend</b>, <b>frontend</b> y <b>DevOps (CI/CD)</b>. En backend diseño sistemas de <b>alto rendimiento</b>, <b>escalables</b> y <b>seguros</b> con <b>Node.js</b>, <b>TypeScript</b>, <b>NestJS</b>, <b>Express</b>, <b>PHP</b> (Laravel, Symfony) y <b>Python</b> (Django, FastAPI). En frontend construyo interfaces modernas con <b>React</b>, <b>TypeScript</b> y <b>Tailwind</b>. Domino <b>PostgreSQL</b>, <b>MongoDB</b>, <b>Redis</b>, <b>Docker</b> y <b>Kubernetes</b>, y arquitecto en <b>AWS</b> con <b>serverless</b>, <b>automatización CI/CD</b> y <b>pipelines de pruebas</b>. Apasionado por el <b>Domain-Driven Design (DDD)</b>, la <b>arquitectura limpia</b>, la <b>observabilidad de sistemas</b> y la <b>calidad del código</b>, con amplia trayectoria en <b>liderazgo técnico</b> y <b>mentoría de desarrolladores</b>.",
+		},
+		projects: {
+			subtitle: "Cosas que he lanzado",
+			title: "Proyectos.",
+			description:
+				"Una selección de <b>software real en producción</b> que diseñé y construí — desde un <b>SaaS de facturación electrónica DIAN</b> hasta plataformas <b>con IA</b> y full-stack. Algunos repositorios son privados pero <b>disponibles para code review a pedido</b>.",
+			liveLabel: "Ver sitio",
+			codeLabel: "Ver código",
+			privateLabel: "Repo privado · code review a pedido",
+			hoverHint: "▸ PASÁ EL MOUSE / TOCÁ",
+			ctrlPrev: "◄ PROYECTO",
+			ctrlNext: "PROYECTO ►",
+			viewSummary: "RESUMEN",
+			viewTech: "TECH",
+			viewShot: "PREVIEW",
 		},
 		experience: {
 			subtitle: "Lo que he hecho hasta ahora",
@@ -151,7 +187,7 @@ export const uiCopy = {
 		languagePrompt: {
 			title: "👋 ¡Bienvenido!",
 			description:
-				"Bienvenido a mi portafolio. Soy <b>Zack Isaza</b>, <b>Ingeniero Backend Senior</b> enfocado en crear sistemas de software <b>escalables</b>, <b>eficientes</b> y <b>seguros</b>.\n\nAquí encontrarás una selección de mi <b>trabajo</b>, <b>experiencia</b> y <b>proyectos</b> recientes.\n\nSi tú o tu empresa necesitan una <b>solución de software personalizada</b>, no dudes en contactarme — estaré encantado de discutir cómo puedo ayudar.\n\n<b class='text-[#8B0000] font-semibold'>Por favor, selecciona tu idioma preferido para continuar:</b>",
+				"Bienvenido a mi portafolio. Soy <b>Zack Isaza</b>, <b>Ingeniero de Software Senior</b> enfocado en crear sistemas de software <b>escalables</b>, <b>eficientes</b> y <b>seguros</b>.\n\nAquí encontrarás una selección de mi <b>trabajo</b>, <b>experiencia</b> y <b>proyectos</b> recientes.\n\nSi tú o tu empresa necesitan una <b>solución de software personalizada</b>, no dudes en contactarme — estaré encantado de discutir cómo puedo ayudar.\n\n<b class='text-[#8B0000] font-semibold'>Por favor, selecciona tu idioma preferido para continuar:</b>",
 			tapAnywhere: "¡Toca en cualquier lugar para continuar!",
 			clickAnywhere: "¡Haz click en cualquier lugar para continuar!",
 			closingIn: "Cerrando en {seconds} segundos...",
