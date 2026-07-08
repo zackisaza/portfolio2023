@@ -1031,11 +1031,17 @@
 	position: absolute;
 	inset: 0;
 	margin: auto;
-	width: clamp(260px, 30vw, 440px);
-	height: clamp(540px, 84vh, 900px);
+	/* Roomy stage so the box can splay open + tumble away without clipping. */
+	width: clamp(480px, 66vw, 1000px);
+	height: clamp(780px, 108vh, 1480px);
 	z-index: 40;
-	cursor: pointer;
+	cursor: grab;
 	outline: none;
+	overflow: visible;
+	touch-action: none; /* let drag-to-rotate work on touch without scrolling */
+}
+.box3d-wrap:active {
+	cursor: grabbing;
 }
 .box3d-wrap canvas {
 	width: 100% !important;
@@ -1045,7 +1051,9 @@
 .box3d-hint {
 	position: absolute;
 	left: 50%;
-	bottom: -8px;
+	/* The wrap is much taller than the box, so anchor the hint near the box
+	   (lower third) instead of the very bottom of the stage. */
+	bottom: 26%;
 	transform: translateX(-50%);
 	white-space: nowrap;
 	font-family: 'Press Start 2P', monospace;
@@ -1606,5 +1614,43 @@
 		transform: none !important;
 		box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
 	}
+}
+
+/* ── Section transition ──────────────────────────────────────────────
+   Reuses the hero landscape as a LUMINANCE MASK to reproduce its exact
+   white→black mountain silhouette as a section transition, recoloured.
+   Designed to OVERLAY the top of the section below it (which must be
+   position: relative): the mountains are transparent so the real
+   background of that section shows through — guaranteeing a 100% colour
+   match — while the "sky" is painted in --tr-from to blend with the
+   section above and to hide the harsh top of any animated backdrop.
+     --tr-from   → colour of the LIGHT (sky) areas (matches section above)
+     --tr-to     → optional colour of the DARK (mountain) areas; omit to
+                   stay transparent and reveal the section behind
+     --tr-mask   → mask image URL (passed inline so Vite resolves the asset)
+     --tr-height → band height (default 340px)
+   Requires CSS mask-mode: luminance (modern Chrome/Safari/Firefox). */
+.section-transition {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: var(--tr-height, 340px);
+	z-index: 1;
+	background-color: var(--tr-to, transparent);
+	pointer-events: none;
+}
+.section-transition::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background-color: var(--tr-from);
+	-webkit-mask-image: var(--tr-mask);
+	mask-image: var(--tr-mask);
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-size: 100% 100%;
+	mask-size: 100% 100%;
+	mask-mode: luminance;
 }
 

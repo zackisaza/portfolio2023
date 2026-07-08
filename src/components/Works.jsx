@@ -21,6 +21,7 @@ import {
 } from "../assets";
 import { fadeIn, textVariant } from "../utils/motion";
 import { useLanguage } from "../context/LanguageContext";
+import { useServicesGame } from "../context/ServicesGameContext";
 import Typewriter from "./Typewriter";
 import BoosterBox3D from "./BoosterBox3D";
 import pokemonLogo from "../assets/pokemon/pokemon-logo.png";
@@ -107,6 +108,8 @@ const EnergySymbol = ({ type = 'colorless', size = 20 }) => {
 
 const ProjectCard = ({ index, name, description, highlights, icon, deal, gridRef }) => {
 	const { language } = useLanguage();
+	const game = useServicesGame();
+	const isSelected = !!game?.opened && game.selected === index;
 	const containerRef = useRef(null);
 	const cardRef = useRef(null);
 	const hoverAreaRef = useRef(null);
@@ -142,18 +145,31 @@ const ProjectCard = ({ index, name, description, highlights, icon, deal, gridRef
 	// Per-card eased progress with a stagger, plus a brief shuffle wobble.
 	const easeOut = (p) => 1 - Math.pow(1 - Math.min(1, Math.max(0, p)), 3);
 	const dealt = (p) => {
-		const start = (index % 6) * 0.1; // wider stagger → clearer one-by-one deal
-		return easeOut((p - start) / 0.5);
+		const start = (index % 6) * 0.09; // clear one-by-one deal out of the pack
+		return easeOut((p - start) / 0.55);
 	};
-	// Longer shuffle wobble as each card flies out of the pack.
-	const wobble = (p) => (p < 0.34 ? Math.sin(p * 32 + index * 1.7) * (0.34 - p) * 30 : 0);
-	const stackAngle = (index - 2.5) * 4; // fanned-deck tilt
+	// Shuffle wobble as each card flies out.
+	const wobble = (p) => (p < 0.34 ? Math.sin(p * 32 + index * 1.7) * (0.34 - p) * 26 : 0);
+	const stackAngle = (index - 2.5) * 4; // fanned-deck tilt while stacked
+	const LAUNCH_UP = 74; // start up at the box mouth (cards sit behind the box)
+	const ARC = 82; // extra upward hop as each card pops out of the box
 
+	// Each card starts small at the box opening (behind it), hops up out of the
+	// mouth, then travels and fans out to its grid slot.
 	const dx = useTransform(deal, (p) => (origin.on ? origin.dx * (1 - dealt(p)) : 0));
-	const dy = useTransform(deal, (p) => (origin.on ? origin.dy * (1 - dealt(p)) : 0));
-	const rotate = useTransform(deal, (p) => (origin.on ? stackAngle * (1 - dealt(p)) + wobble(p) : 0));
-	const scale = useTransform(deal, (p) => (origin.on ? 0.84 + 0.16 * dealt(p) : 1));
-	const dealOpacity = useTransform(deal, (p) => (origin.on ? Math.min(1, dealt(p) * 1.6) : 1));
+	const dy = useTransform(deal, (p) => {
+		if (!origin.on) return 0;
+		const d = dealt(p);
+		return (origin.dy - LAUNCH_UP) * (1 - d) - ARC * Math.sin(Math.PI * d);
+	});
+	const rotate = useTransform(deal, (p) => {
+		if (!origin.on) return 0;
+		const d = dealt(p);
+		const spin = index % 2 ? 24 : -24; // slight spin as it emerges
+		return (stackAngle + spin) * (1 - d) + wobble(p);
+	});
+	const scale = useTransform(deal, (p) => (origin.on ? 0.45 + 0.55 * dealt(p) : 1));
+	const dealOpacity = useTransform(deal, (p) => (origin.on ? Math.min(1, dealt(p) * 2.4) : 1));
 	// Separate flip states for desktop and mobile so toggling one card
 	// on one input method doesn't interfere with the other input method.
 	const [flippedDesktop, setFlippedDesktop] = useState(false);
@@ -310,6 +326,8 @@ const ProjectCard = ({ index, name, description, highlights, icon, deal, gridRef
 		// Solo activar si no está ya hovering
 		if (!isHovering) {
 			setIsHovering(true);
+			// Desktop: hovering flips the card to reveal its details/back.
+			if (!isTouch) setFlippedDesktop(true);
 			// During pointer interaction, ensure we disable idle animation
 			el.classList.add('holo-pointer');
 			el.classList.remove('holo-animate');
@@ -328,6 +346,8 @@ const ProjectCard = ({ index, name, description, highlights, icon, deal, gridRef
 		// Debounce para evitar flickering en los bordes
 		hoverTimeoutRef.current = setTimeout(() => {
 			setIsHovering(false);
+			// Desktop: leaving flips the card back to its front face.
+			if (!isTouch) setFlippedDesktop(false);
 			// Return to idle animation and center the sheen
 			el.classList.remove('holo-pointer');
 			el.classList.add('holo-animate');
@@ -371,29 +391,30 @@ const ProjectCard = ({ index, name, description, highlights, icon, deal, gridRef
 		};
 	}, []);
 
-	// Derived flip state depending on input method (desktop vs mobile)
-	const isFlipped = isTouch ? flippedMobile : flippedDesktop;
+	// Derived flip state: input method (desktop vs mobile) OR the Game Boy B button
+	// flipping the currently-selected card.
+	const isFlipped = (isTouch ? flippedMobile : flippedDesktop) || (isSelected && !!game?.flipped);
 	
 	return (
 		<motion.div
 			ref={containerRef}
-			className='sm:w-[calc(33.333%-32px)] w-full px-4 sm:px-0 h-full will-change-transform relative'
-			style={{ perspective: '1000px', x: dx, y: dy, rotate, scale, opacity: dealOpacity, zIndex: 6 - (index % 6) }}>
+			className={`pkmn-card-slot w-full sm:w-[384px] px-4 sm:px-0 sm:ml-[calc(min(344px,14vw)_-_384px)] sm:first:ml-0 will-change-transform relative${isSelected ? ' is-selected' : ''}`}
+			style={{ '--i': index, perspective: '1000px', x: dx, y: dy, rotate, scale, opacity: dealOpacity, zIndex: index }}>
 			
 			{/* Tap to flip indicator - mobile only */}
 			<motion.div
 				className='absolute -bottom-10 left-1/2 transform -translate-x-1/2 sm:hidden z-20 pointer-events-none'
 				initial={{ opacity: 0, y: -8, scale: 0.98 }}
-				animate={{
+				animate={inView ? {
 					opacity: [0, 1, 0.85, 1],
 					y: [0, -6, -3, 0],
 					scale: [1, 1.02, 1],
-				}}
-				transition={{
+				} : { opacity: 0 }}
+				transition={inView ? {
 					duration: 2.2,
 					repeat: Infinity,
 					ease: 'easeInOut',
-				}}
+				} : { duration: 0.2 }}
 				aria-hidden='true'
 			>
 				<div className='inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 via-purple-500 to-pink-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm/10'>
@@ -404,9 +425,10 @@ const ProjectCard = ({ index, name, description, highlights, icon, deal, gridRef
 				</div>
 			</motion.div>
 
+			<div className='pkmn-fan-tilt'>
 			<WrapperComponent {...wrapperProps}>
 				{/* Área de hover fija - wrapper estable (agregada clase para hover del contenedor) */}
-				<div 
+				<div
 					ref={hoverAreaRef}
 					onMouseMove={isTouch ? undefined : handlePointer}
 					onTouchStart={(e) => { if (isTouch) { handleTouchStart(e); } else { handleEnter(e); } }}
@@ -420,7 +442,7 @@ const ProjectCard = ({ index, name, description, highlights, icon, deal, gridRef
 							onClick={(e) => {
 								// Prevent double-toggle: ignore click events that follow a touch toggle
 								if (Date.now() - recentTouchRef.current < 500) return;
-								if (!isTouch) { setFlippedDesktop((v) => !v); }
+								// Desktop flip is driven by hover (enter/leave); click is touch-only.
 							}}
 							onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (isTouch) setFlippedMobile((v) => !v); else setFlippedDesktop((v) => !v); } }}
 							role='button'
@@ -700,6 +722,7 @@ const ProjectCard = ({ index, name, description, highlights, icon, deal, gridRef
 				</div>
 				</div>
 				</WrapperComponent>
+			</div>
 		</motion.div>
 	);
 };
@@ -772,6 +795,7 @@ const CardPack = ({ onOpen, language }) => (
 
 const Works = () => {
 	const { t, language } = useLanguage();
+	const game = useServicesGame();
 	const gridRef = useRef(null);
 
 	// A booster pack covers the deck until clicked. On small screens or with
@@ -786,30 +810,49 @@ const Works = () => {
 	// 0 = cards stacked/hidden inside the pack, 1 = fully dealt into the grid.
 	const openProgress = useMotionValue(opened ? 1 : 0);
 
+	// If we skip the pack (mobile / reduced motion), the console is already "on".
+	useEffect(() => {
+		if (opened) game?.markOpened();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
 	const handleOpen = () => {
 		if (opened) return;
 		setOpened(true);
-		// Long, appreciable sequence: the pack rips (~1s) then the hand shuffles
-		// out over a slow, staggered cascade.
-		animate(openProgress, 1, { duration: 3, ease: [0.22, 1, 0.36, 1], delay: 0.9 });
+		game?.markOpened();
+		// Cards start emerging almost immediately (while the open box is still
+		// visible and fading), hopping out of the mouth in a staggered cascade.
+		animate(openProgress, 1, { duration: 2.8, ease: [0.22, 1, 0.36, 1], delay: 0.1 });
 	};
 
 	return (
 			<>
-				<motion.div variants={textVariant()} className='px-4 sm:px-0 -mt-12 md:mt-0'>
-				<p className={styles.sectionSubText}><Typewriter content={t("works.subtitle")} speed={26} startDelay={60} /></p>
-				<h2 className={styles.sectionHeadText}><Typewriter content={t("works.title")} speed={26} startDelay={120} /></h2>
-			</motion.div>
+				<div className='pkmn-dex'>
+					<div className='pkmn-dex-top'>
+						<span className='pkmn-dex-lens' aria-hidden='true' />
+						<span className='pkmn-dex-leds' aria-hidden='true'>
+							<i /><i /><i />
+						</span>
+					</div>
+					<div className='pkmn-dex-screen'>
+						<motion.div variants={textVariant()} className='text-center'>
+							<p className={`${styles.sectionSubText} !text-center !text-[#e0a400] !font-bold`}>
+								<Typewriter content={t("works.subtitle")} speed={26} startDelay={60} />
+							</p>
+							<h2 className={`${styles.sectionHeadText} !text-center pkmn-title-text`}>
+								<Typewriter content={t("works.title")} speed={26} startDelay={120} />
+							</h2>
+						</motion.div>
 
-								<div className='w-full'>
-				<motion.p
-					variants={fadeIn("", "", 0.1, 1)}
-					className='mt-4 text-secondary text-[20px] w-full leading-[30px] px-6 sm:px-0'
-				>
-					<Typewriter rich content={t("works.description")} speed={22} startDelay={180} />
-				</motion.p>
-			</div>
-			<div ref={gridRef} className='relative mt-16 sm:mt-6 md:mt-20 flex flex-wrap gap-16 sm:gap-12 justify-center items-stretch'>
+						<motion.p
+							variants={fadeIn("", "", 0.1, 1)}
+							className='mt-3 text-center max-w-[880px] mx-auto text-[17px] font-medium leading-[26px] !text-[#374151] pkmn-desc-text'
+						>
+							<Typewriter rich content={t("works.description")} speed={22} startDelay={180} />
+						</motion.p>
+					</div>
+				</div>
+			<div ref={gridRef} className='pkmn-hand relative mt-24 sm:mt-24 md:mt-32 sm:w-screen sm:left-1/2 sm:-translate-x-1/2 sm:scale-[0.8] sm:origin-top flex flex-col sm:flex-row gap-16 sm:gap-0 justify-center items-center sm:items-end'>
 				{servicesShowcase.map((service, index) => {
 					const localized =
 						service.translations[language] ?? service.translations.en;

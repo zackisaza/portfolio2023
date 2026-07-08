@@ -12,7 +12,7 @@ const MyCompany = () => {
 	const { t } = useLanguage();
 
 	return (
-		<div className='pb-[1rem] md:pb-[3rem]'>
+		<div className='mt-28 md:mt-40 pb-[1rem] md:pb-[3rem]'>
 			<motion.div variants={textVariant()}>
 				<p className={styles.sectionSubText}><Typewriter content={t("myCompany.subtitle")} speed={26} startDelay={60} /></p>
 				<h2 className={styles.sectionHeadText}><Typewriter content={t("myCompany.title")} speed={26} startDelay={120} /></h2>

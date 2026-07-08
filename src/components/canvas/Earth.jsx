@@ -12,7 +12,7 @@ const Earth = ({ visible = true }) => {
 	// entrance/exit animation multiplier (starts small, eases to 1)
 	const entranceScale = useRef(0.25);
 	const neutralPosition = useRef(new Vector3(0, 0, 0));
-	const baseScale = 2.5;
+	const baseScale = 3.4;
 
 	useFrame(({ clock }) => {
 		const group = groupRef.current;

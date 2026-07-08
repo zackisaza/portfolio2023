@@ -40,13 +40,6 @@ export const uiCopy = {
 			subtitle: "What I have done so far",
 			title: "Work Experience.",
 		},
-		build: {
-			subtitle: "Under the hood",
-			title: "The Build.",
-			description:
-				"This landing uses <b>React + Vite</b>, <b>Tailwind CSS</b>, <b>Framer Motion</b>, and 3D with <b>React Three Fiber</b> (three.js + drei). It ships <b>lazy-loaded chunks</b>, optimized <b>WebP/AVIF</b> assets, and a custom <b>typewriter</b>. Canvases run with <b>AdaptiveDpr</b>, capped DPR and tuned frameloops; <b>EmailJS</b> loads on demand; the side navbar is <b>portalized</b> to <code>document.body</code> to avoid stacking issues.",
-			linkText: "View code on GitHub",
-		},
 		tech: {
 			subtitle: "STACK I MASTER",
 			title: "What can I do?",
@@ -61,7 +54,7 @@ export const uiCopy = {
 				"Clean Architecture, microservices & modular monoliths, event-driven systems, serverless (AWS Lambda), Docker & Kubernetes, CI/CD pipelines, Infrastructure as Code (Terraform), monitoring & observability (Prometheus, Grafana, OpenTelemetry).",
 		},
 		works: {
-			subtitle: "How I can help (Pick your card)",
+			subtitle: "How can I help you?",
 			title: "My Card Deck",
 			description:
 				"From <b>custom software platforms</b> to <b>front-end experiences</b>, <b>backend systems</b>, <b>product design</b>, <b>software architecture</b>, and <b>automation with AI</b>, each engagement is tailored to accelerate your roadmap.",
@@ -69,16 +62,16 @@ export const uiCopy = {
 		contact: {
 			subtitle: "Get in touch",
 			title: "Contact.",
-			nameLabel: "Your name:",
-			namePlaceholder: "What's your name?",
-			emailLabel: "Your email:",
-			emailPlaceholder: "What's your email?",
-			messageLabel: "Your message:",
-			messagePlaceholder: "What do you want to say?",
-			sending: "Sending...",
-			send: "Send",
-			success: "Thank you. I will get back to you as soon as possible.",
-			error: "Something went wrong. Please try again.",
+			description:
+				"Got a project in mind or just want to say hi? Reach out on WhatsApp for a quick chat, or drop me an email — I usually reply within a day.",
+			whatsappCta: "Chat on WhatsApp",
+			emailCta: "Send an email",
+		},
+		footer: {
+			tagline: "Senior Software Engineer crafting scalable, reliable software.",
+			followMe: "Follow me",
+			rights: "All rights reserved.",
+			builtWith: "Built with React, Vite & Three.js",
 		},
 		myCompany: {
 			subtitle: "My Startup",
@@ -137,13 +130,6 @@ export const uiCopy = {
 			subtitle: "Lo que he hecho hasta ahora",
 			title: "Experiencia laboral.",
 		},
-		build: {
-			subtitle: "Bajo el capó",
-			title: "El Build.",
-			description:
-				"Esta landing usa <b>React + Vite</b>, <b>Tailwind CSS</b>, <b>Framer Motion</b> y 3D con <b>React Three Fiber</b> (three.js + drei). Entrega <b>chunks en lazy-load</b>, <b>WebP/AVIF</b> optimizado y un <b>typewriter</b> propio. Los canvas usan <b>AdaptiveDpr</b>, DPR limitado y frameloops ajustados; <b>EmailJS</b> carga bajo demanda; la barra lateral está <b>portalizada</b> a <code>document.body</code> para evitar problemas de stacking.",
-			linkText: "Ver código en GitHub",
-		},
 		tech: {
 			subtitle: "Stack que domino",
 			title: "¿Qué puedo hacer?",
@@ -158,7 +144,7 @@ export const uiCopy = {
 				"Arquitectura limpia, microservicios y monolitos modulares, sistemas orientados a eventos, serverless (AWS Lambda), Docker & Kubernetes, pipelines CI/CD, Infraestructura como Código (Terraform), monitorización y observabilidad (Prometheus, Grafana, OpenTelemetry).",
 		},
 		works: {
-			subtitle: "Cómo puedo ayudarte (Elige tu carta)",
+			subtitle: "¿En qué puedo ayudarte?",
 			title: "Las cartas de mi deck",
 			description:
 				"Desde <b>software a medida</b> y <b>experiencias front-end</b>, hasta <b>sistemas backend</b>, <b>diseño de producto</b>, <b>arquitectura de software</b> y <b>automatización con IA</b>, cada servicio se adapta a la velocidad y metas de tu negocio.",
@@ -166,16 +152,16 @@ export const uiCopy = {
 		contact: {
 			subtitle: "Ponte en contacto",
 			title: "Contacto.",
-			nameLabel: "Tu nombre:",
-			namePlaceholder: "¿Cuál es tu nombre?",
-			emailLabel: "Tu correo:",
-			emailPlaceholder: "¿Cuál es tu correo?",
-			messageLabel: "Tu mensaje:",
-			messagePlaceholder: "¿Qué te gustaría decir?",
-			sending: "Enviando...",
-			send: "Enviar",
-			success: "Gracias. Me pondré en contacto contigo lo antes posible.",
-			error: "Ocurrió un error. Por favor, inténtalo de nuevo.",
+			description:
+				"¿Tienes un proyecto en mente o solo quieres saludar? Escríbeme por WhatsApp para una charla rápida, o mándame un correo — normalmente respondo en menos de un día.",
+			whatsappCta: "Escríbeme por WhatsApp",
+			emailCta: "Enviar un correo",
+		},
+		footer: {
+			tagline: "Ingeniero de Software Senior creando software escalable y confiable.",
+			followMe: "Sígueme",
+			rights: "Todos los derechos reservados.",
+			builtWith: "Hecho con React, Vite y Three.js",
 		},
 		myCompany: {
 			subtitle: "Mi Startup",

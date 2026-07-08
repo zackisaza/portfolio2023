@@ -64,21 +64,31 @@ const Typewriter = ({
     return key.slice(0, count);
   }, [key, count, rich]);
 
+  // Stack a hidden "ghost" of the FULL text under the animated text so the
+  // container is sized to its final dimensions from the first frame. This stops
+  // the layout shift (reflow) that happens when the typed text grows char by char.
+  const cursorHtml = cursor && typing ? '<span class="tw-cursor">|</span>' : '';
   return rich ? (
-    (() => {
-      const cursorHtml = cursor && typing ? '<span class="tw-cursor">|</span>' : '';
-      return (
-        <span
-          className={className}
-          aria-label={ariaLabel}
-          dangerouslySetInnerHTML={{ __html: rendered + cursorHtml }}
-        />
-      );
-    })()
+    <span className={className} aria-label={ariaLabel} style={{ display: 'grid' }}>
+      <span
+        aria-hidden='true'
+        style={{ gridArea: '1 / 1', visibility: 'hidden' }}
+        dangerouslySetInnerHTML={{ __html: key }}
+      />
+      <span
+        style={{ gridArea: '1 / 1' }}
+        dangerouslySetInnerHTML={{ __html: rendered + cursorHtml }}
+      />
+    </span>
   ) : (
-    <span className={className} aria-label={ariaLabel}>
-      {rendered}
-      {cursor && typing && <span className='tw-cursor'>|</span>}
+    <span className={className} aria-label={ariaLabel} style={{ display: 'grid' }}>
+      <span aria-hidden='true' style={{ gridArea: '1 / 1', visibility: 'hidden' }}>
+        {key}
+      </span>
+      <span style={{ gridArea: '1 / 1' }}>
+        {rendered}
+        {cursor && typing && <span className='tw-cursor'>|</span>}
+      </span>
     </span>
   );
 };

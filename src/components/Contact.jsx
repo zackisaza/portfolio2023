@@ -1,209 +1,103 @@
-import { useState, useRef, useEffect, lazy, Suspense } from "react";
+import { lazy, Suspense } from "react";
 import { motion } from "framer-motion";
 
 import { styles } from "../styles";
 // Lazy-load EarthCanvas to defer three.js until the contact section is viewed
 const EarthCanvasLazy = lazy(() => import("./canvas/Earth"));
 import { SectionWrapper } from "../hoc";
-import { slideIn } from "../utils/motion";
+import { fadeIn } from "../utils/motion";
 import { useLanguage } from "../context/LanguageContext";
 import Typewriter from "./Typewriter";
 
-// EmailJS config now supports Vite env variables:
-// VITE_EMAILJS_PUBLIC_KEY, VITE_EMAILJS_SERVICE_ID, VITE_EMAILJS_TEMPLATE_ID
+const WHATSAPP_URL = "https://wa.me/573226144416";
+const WHATSAPP_DISPLAY = "+57 322 614 4416";
+const EMAIL = "zackisaza@gmail.com";
+
+const ArrowIcon = () => (
+	<svg
+		className='ml-auto shrink-0 text-black-100/25 transition-all duration-300 group-hover:translate-x-1'
+		width='18'
+		height='18'
+		viewBox='0 0 24 24'
+		fill='none'
+		stroke='currentColor'
+		strokeWidth='2.5'
+		strokeLinecap='round'
+		strokeLinejoin='round'
+		aria-hidden='true'>
+		<line x1='5' y1='12' x2='19' y2='12' />
+		<polyline points='12 5 19 12 12 19' />
+	</svg>
+);
 
 const Contact = () => {
-
-	const formRef = useRef();
 	const { t } = useLanguage();
 
-	const [form, setForm] = useState({
-		name: "",
-		email: "",
-		message: "",
-	});
-
-	const [loading, setLoading] = useState(false);
-
-	// Toast state for nicer success/error notifications
-	const [toast, setToast] = useState({ show: false, type: "success", message: "" });
-	const toastTimerRef = useRef(null);
-
-	useEffect(() => {
-		return () => {
-			if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-		};
-	}, []);
-
-	// Resolve EmailJS credentials from env with safe fallbacks
-	const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "e_fKwZtRAVy2098dr";
-	const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID || "service_dbzshnj";
-	const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "template_57z8tt8";
-
-	const handleChange = (e) => {
-
-		const { name, value } = e.target;
-
-		setForm({
-			...form,
-			[name]: value,
-		});
-	};
-
-	const handleSubmit = async (e) => {
-		e.preventDefault();
-		setLoading(true);
-		try {
-			const emailjs = (await import("@emailjs/browser")).default;
-			await emailjs.send(
-				EMAILJS_SERVICE_ID,
-				EMAILJS_TEMPLATE_ID,
-				{
-					from_name: form.name,
-					to_name: "Zett Isaza",
-					from_email: form.email,
-					to_email: "cowboyzett@gmail.com",
-					reply_to: form.email,
-					message: form.message,
-				},
-				EMAILJS_PUBLIC_KEY
-			);
-			setLoading(false);
-			if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-			setToast({ show: true, type: "success", message: t("contact.success") });
-			toastTimerRef.current = setTimeout(() => {
-				setToast((prev) => ({ ...prev, show: false }));
-			}, 3500);
-			setForm({ name: "", email: "", message: "" });
-		} catch (error) {
-			setLoading(false);
-			console.error(error);
-			if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-			setToast({ show: true, type: "error", message: t("contact.error") });
-			toastTimerRef.current = setTimeout(() => {
-				setToast((prev) => ({ ...prev, show: false }));
-			}, 4000);
-		}
-	};
-
 	return (
-		<div className='xl:mt-12 xl:flex-row flex-col-reverse flex gap-10 overflow-hidden'>
+		<div className='xl:mt-12 xl:flex-row xl:items-end flex-col-reverse flex gap-10 overflow-hidden'>
 			<motion.div
-				variants={slideIn("left", "tween", 0.2, 1)}
-				className='flex-[0.75] p-8 rounded-2xl'>
-				<p className={styles.sectionSubText}><Typewriter content={t("contact.subtitle")} speed={26} startDelay={60} /></p>
-				<h3 className={styles.sectionHeadText}><Typewriter content={t("contact.title")} speed={26} startDelay={120} /></h3>
+				variants={fadeIn("up", "tween", 0.15, 0.8)}
+				className='flex flex-col justify-end flex-[0.75] p-8 pb-12 rounded-2xl'>
+				<div className='flex items-center gap-3'>
+					<span className='h-px w-9 bg-tertiary' />
+					<p className='text-[13px] font-semibold uppercase tracking-[0.25em] text-tertiary'>
+						<Typewriter content={t("contact.subtitle")} speed={26} startDelay={60} />
+					</p>
+				</div>
 
-				<form
-					ref={formRef}
-					onSubmit={handleSubmit}
-					className='mt-12 flex flex-col gap-8'>
-					<label className='flex flex-col'>
-						<span className='text-white-100 font-medium mb-4'>
-							{t("contact.nameLabel")}
+				<h3 className={`${styles.sectionHeadText} !text-black-200 mt-3`}><Typewriter content={t("contact.title")} speed={26} startDelay={120} /></h3>
+
+				<p className='mt-5 max-w-md text-[16px] leading-7 text-black-100/70'>
+					{t("contact.description")}
+				</p>
+
+				<div className='mt-8 flex max-w-md flex-col gap-3'>
+					{/* WhatsApp */}
+					<a
+						href={WHATSAPP_URL}
+						target='_blank'
+						rel='noopener noreferrer'
+						aria-label={t("contact.whatsappCta")}
+						className='group flex items-center gap-4 rounded-2xl border border-black-100/10 bg-white/50 px-5 py-4 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#25D366]/50 hover:bg-white hover:shadow-lg hover:shadow-[#25D366]/10'>
+						<span className='flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#25D366]/15 text-[#1aa851] transition-transform duration-300 group-hover:scale-110'>
+							<svg width='22' height='22' viewBox='0 0 24 24' fill='currentColor' aria-hidden='true'>
+								<path d='M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.946C.16 5.335 5.495 0 12.05 0a11.82 11.82 0 018.413 3.488 11.82 11.82 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.86 9.86 0 001.599 5.397l-.999 3.648 3.889-1.022zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.299-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z' />
+							</svg>
 						</span>
-						<input
-							type='text'
-							name='name'
-							value={form.name}
-							onChange={handleChange}
-							placeholder={t("contact.namePlaceholder")}
-							className='bg-white-100 py-4 px-6 placeholder:text-black-100/60 text-black-200 rounded-lg outline-none border border-black-100/20 font-medium'
-						/>
-					</label>
-					<label className='flex flex-col'>
-						<span className='text-white-100 font-medium mb-4'>
-							{t("contact.emailLabel")}
+						<span className='flex min-w-0 flex-col'>
+							<span className='text-[11px] font-semibold uppercase tracking-wider text-black-100/60'>WhatsApp</span>
+							<span className='truncate text-[15px] font-semibold text-black-200'>{WHATSAPP_DISPLAY}</span>
 						</span>
-						<input
-							type='email'
-							name='email'
-							value={form.email}
-							onChange={handleChange}
-							placeholder={t("contact.emailPlaceholder")}
-							className='bg-white-100 py-4 px-6 placeholder:text-black-100/60 text-black-200 rounded-lg outline-none border border-black-100/20 font-medium'
-						/>
-					</label>
-					<label className='flex flex-col'>
-						<span className='text-white-100 font-medium mb-4'>
-							{t("contact.messageLabel")}
+						<ArrowIcon />
+					</a>
+
+					{/* Email */}
+					<a
+						href={`mailto:${EMAIL}`}
+						aria-label={t("contact.emailCta")}
+						className='group flex items-center gap-4 rounded-2xl border border-black-100/10 bg-white/50 px-5 py-4 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-tertiary/40 hover:bg-white hover:shadow-lg hover:shadow-tertiary/10'>
+						<span className='flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-tertiary/10 text-tertiary transition-transform duration-300 group-hover:scale-110'>
+							<svg width='22' height='22' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' aria-hidden='true'>
+								<rect x='2' y='4' width='20' height='16' rx='2' />
+								<path d='m22 7-10 5L2 7' />
+							</svg>
 						</span>
-						<textarea
-							rows='7'
-							name='message'
-							value={form.message}
-							onChange={handleChange}
-							placeholder={t("contact.messagePlaceholder")}
-							className='bg-white-100 py-4 px-6 placeholder:text-black-100/60 text-black-200 rounded-lg outline-none border border-black-100/20 font-medium'
-						/>
-					</label>
-				<motion.button
-					type='submit'
-					disabled={loading}
-					aria-busy={loading}
-					className='inline-block relative z-20 py-2 px-6 outline-none w-fit text-white font-semibold rounded-lg overflow-hidden border-2 border-white bg-transparent cursor-pointer transition-colors duration-200 ease-in-out hover:bg-white hover:text-black hover:border-white disabled:opacity-60 disabled:cursor-not-allowed'
-					whileHover={{ scale: 1.05 }}
-					whileTap={{ scale: 0.95 }}
-					animate={{ scale: [1, 1.02, 1] }}
-					transition={{ duration: 2.5, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' }}
-				>
-					<span className='relative z-10'>
-						{loading ? t("contact.sending") : t("contact.send")}
-					</span>
-				</motion.button>
-				</form>
+						<span className='flex min-w-0 flex-col'>
+							<span className='text-[11px] font-semibold uppercase tracking-wider text-black-100/60'>Email</span>
+							<span className='truncate text-[15px] font-semibold text-black-200'>{EMAIL}</span>
+						</span>
+						<ArrowIcon />
+					</a>
+				</div>
 			</motion.div>
+
 			<motion.div
-				variants={slideIn("right", "tween", 0.2, 1)}
-				className='xl:flex-1 xl:h-auto md:h[550px] h-[350px]'>
+				variants={fadeIn("up", "tween", 0.3, 0.9)}
+				className='xl:flex-1 xl:-translate-y-16 h-[380px] sm:h-[460px] md:h-[520px] xl:h-[560px]'>
 				<Suspense fallback={null}>
 					<EarthCanvasLazy sectionIndex={6} />
 				</Suspense>
 			</motion.div>
-			{/* Toast notification */}
-			<div className="fixed bottom-6 right-6 z-[100]">
-				{toast.show && (
-					<motion.div
-						initial={{ opacity: 0, y: 12, scale: 0.98 }}
-						animate={{ opacity: 1, y: 0, scale: 1 }}
-						exit={{ opacity: 0, y: 10, scale: 0.98 }}
-						transition={{ type: "spring", stiffness: 310, damping: 22 }}
-						className={`shadow-lg rounded-xl px-4 py-3 min-w-[260px] max-w-[340px] border backdrop-blur-md ${
-							toast.type === "success"
-								? "bg-green-500/90 border-green-400/50 text-white"
-								: "bg-red-500/90 border-red-400/50 text-white"
-						}`}
-						role="status"
-						aria-live="polite"
-					>
-						<div className="flex items-start gap-3">
-							<div className="mt-0.5">
-								{toast.type === "success" ? (
-									<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-										<path fillRule="evenodd" d="M2.25 12a9.75 9.75 0 1119.5 0 9.75 9.75 0 01-19.5 0zm13.36-2.31a.75.75 0 10-1.22-.88l-3.44 4.78-2.02-2.02a.75.75 0 10-1.06 1.06l2.63 2.63a.75.75 0 001.16-.1l4.95-6.47z" clipRule="evenodd" />
-									</svg>
-								) : (
-									<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-										<path fillRule="evenodd" d="M2.25 12a9.75 9.75 0 1119.5 0 9.75 9.75 0 01-19.5 0zm12.53-3.53a.75.75 0 10-1.06-1.06L12 9.94 10.28 8.22a.75.75 0 10-1.06 1.06L10.94 11l-1.72 1.72a.75.75 0 101.06 1.06L12 12.06l1.72 1.72a.75.75 0 101.06-1.06L13.06 11l1.72-1.72z" clipRule="evenodd" />
-									</svg>
-								)}
-							</div>
-							<div className="text-sm leading-5 font-medium">
-								{toast.message}
-							</div>
-							<button
-								className="ml-auto shrink-0 rounded-md/80 hover:opacity-90 focus:outline-none"
-								onClick={() => setToast((prev) => ({ ...prev, show: false }))}
-								aria-label="Close notification"
-							>
-								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-									<path fillRule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 11-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clipRule="evenodd" />
-								</svg>
-							</button>
-						</div>
-					</motion.div>
-				)}
-			</div>
 		</div>
 	);
 };

@@ -24,7 +24,6 @@ export default defineConfig({
               return 'vendor' // Put React with other vendors
             }
             if (id.includes('three') || id.includes('@react-three')) return 'three-vendor'
-            if (id.includes('@emailjs')) return 'email-vendor'
             if (id.includes('framer-motion')) return 'motion-vendor'
             return 'vendor'
           }

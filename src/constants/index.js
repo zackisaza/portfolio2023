@@ -69,13 +69,6 @@ export const navLinks = [
         },
     },
     {
-        id: "build",
-        title: {
-            en: "Build",
-            es: "El Código",
-        },
-    },
-    {
         id: "contact",
         title: {
             en: "Contact",

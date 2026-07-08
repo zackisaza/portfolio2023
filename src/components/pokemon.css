@@ -8,56 +8,37 @@
 .pokemon-bg {
 	position: relative;
 	overflow: hidden;
-	background: radial-gradient(125% 100% at 50% 0%, #ff6f5e 0%, #ef3b30 38%, #cc1a1a 72%, #9c0f12 100%);
-}
-
-/* Giant Poké Ball watermark that gently breathes — the section's signature
-   motif, distinct from the arcade's rotating rays. Built from stacked
-   gradients: red/white halves, black equator band, ring, and center button. */
-.pokemon-bg::before {
-	content: "";
-	position: absolute;
-	left: 50%;
-	top: 45%;
-	width: 82vmin;
-	height: 82vmin;
-	transform: translate(-50%, -50%);
-	border-radius: 50%;
+	/* Classic Game Boy (DMG) body: light greige plastic with soft side shading. */
 	background:
-		radial-gradient(circle at 50% 50%, #fff 0 7.5%, #1a1a1a 7.5% 10.6%, transparent 10.9%),
-		radial-gradient(circle at 50% 50%, transparent 0 13.8%, #1a1a1a 13.8% 16.6%, transparent 16.9%),
-		linear-gradient(#1a1a1a 0 0) 50% 50% / 100% 9% no-repeat,
-		linear-gradient(180deg, #d62d24 0 50%, #f2f2f2 50% 100%);
-	opacity: 0.1;
-	filter: blur(0.5px);
-	pointer-events: none;
-	z-index: 0;
-	animation: poke-breathe 7s ease-in-out infinite;
-}
-
-/* Soft pulsing glow blooms — warm highlight + deep-red shadow corners */
-.pokemon-bg::after {
-	content: "";
-	position: absolute;
-	inset: 0;
-	pointer-events: none;
-	z-index: 0;
-	background:
-		radial-gradient(42% 32% at 18% 16%, rgba(255, 240, 210, 0.42), transparent 60%),
-		radial-gradient(46% 36% at 84% 82%, rgba(140, 8, 12, 0.55), transparent 60%);
-	animation: poke-bloom 8s ease-in-out infinite;
+		radial-gradient(140% 100% at 50% 0%, rgba(255, 255, 255, 0.35), transparent 55%),
+		linear-gradient(165deg, #d9dac4 0%, #c3c4ac 48%, #a8aa93 100%);
 }
 
 /* Floating pixel-Pokémon layer (spans injected by PokemonBackground.jsx) */
 .pokemon-fx {
 	position: absolute;
-	inset: 0;
+	/* --pf-top lets the section transition reserve space above the Game Boy so
+	   its top isn't covered by the overlay (defaults to 0 = fill the section). */
+	top: var(--pf-top, 0);
+	left: 0;
+	right: 0;
+	bottom: 0;
 	overflow: hidden;
 	pointer-events: none;
 	z-index: 0;
 }
 
-.pokemon-fx span {
+/* The drifting sprites fill the LCD; the screen clips them to its bounds. */
+.pokemon-swarm {
+	position: absolute;
+	inset: 0;
+}
+/* Tint the colourful sprites toward the Game Boy green monochrome look. */
+.gb-lcd .pokemon-swarm span {
+	filter: sepia(1) saturate(2.4) hue-rotate(35deg) brightness(0.72) contrast(1.15);
+}
+
+.pokemon-swarm span {
 	position: absolute;
 	bottom: -16%;
 	left: var(--x);
@@ -74,8 +55,316 @@
 	animation: poke-float var(--dur) linear var(--d) infinite;
 }
 
+/* ===== Game Boy screen: dark bezel + green LCD holding the sprite swarm ===== */
+/* The lavender-grey screen bezel, recessed into the body (like the DMG). */
+.gb-screen {
+	position: absolute;
+	top: 6%;
+	left: 6%;
+	right: 6%;
+	bottom: 21%;
+	background: linear-gradient(180deg, #a0a1ab 0%, #8c8d97 100%);
+	border-radius: 10px 10px 44px 10px;
+	padding: clamp(40px, 4.4vw, 66px) clamp(20px, 2.4vw, 34px) clamp(20px, 2.4vw, 34px);
+	box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.35), inset 0 -2px 4px rgba(255, 255, 255, 0.25), 0 10px 26px rgba(0, 0, 0, 0.22);
+	z-index: 0;
+}
+/* Header row: the two signature colour lines + "DOT MATRIX…" label. */
+.gb-screen-header {
+	position: absolute;
+	top: clamp(14px, 1.6vw, 24px);
+	left: clamp(20px, 2.6vw, 40px);
+	right: clamp(20px, 2.6vw, 40px);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+.gb-lines {
+	flex: none;
+	width: clamp(70px, 9vw, 150px);
+	height: 10px;
+	background:
+		linear-gradient(#3a4cc0 0 0) 0 0 / 100% 3px no-repeat,
+		linear-gradient(#d0409a 0 0) 0 7px / 100% 3px no-repeat;
+}
+.gb-screen-label {
+	font-family: 'Press Start 2P', monospace;
+	font-size: clamp(6px, 0.78vw, 10px);
+	letter-spacing: 1.5px;
+	color: #4a4b57;
+	white-space: nowrap;
+}
+/* Red BATTERY LED to the left of the LCD. */
+.gb-battery {
+	position: absolute;
+	left: clamp(14px, 1.6vw, 22px);
+	top: 46%;
+	width: clamp(8px, 0.9vw, 12px);
+	aspect-ratio: 1;
+	border-radius: 50%;
+	background: radial-gradient(circle at 40% 35%, #ff8a7a, #c0392b);
+	box-shadow: 0 0 8px rgba(192, 57, 43, 0.7);
+}
+.gb-lcd {
+	position: absolute;
+	top: clamp(40px, 4.4vw, 66px);
+	left: clamp(36px, 4vw, 60px);
+	right: clamp(20px, 2.4vw, 34px);
+	bottom: clamp(20px, 2.4vw, 34px);
+	border-radius: 6px;
+	overflow: hidden;
+	background: linear-gradient(180deg, #9bbc0f 0%, #8bac0f 100%);
+	box-shadow: inset 0 0 30px rgba(15, 56, 15, 0.35);
+}
+/* subtle LCD scanlines */
+.gb-lcd::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	background: repeating-linear-gradient(180deg, rgba(15, 56, 15, 0.08) 0 2px, transparent 2px 4px);
+}
+/* "Nintendo GAME BOY" wordmark, just below the screen. */
+.gb-logo {
+	position: absolute;
+	left: 7%;
+	top: 81%;
+	display: flex;
+	align-items: flex-end;
+	gap: clamp(8px, 1vw, 18px);
+	z-index: 0;
+}
+.gb-logo-n {
+	height: clamp(13px, 1.5vw, 24px);
+	width: auto;
+}
+.gb-logo-gb {
+	height: clamp(20px, 2.4vw, 40px);
+	width: auto;
+}
+
+/* D-pad — two rounded, cylindrical bars crossing, with a domed centre. */
+.gb-dpad {
+	position: absolute;
+	left: 9%;
+	bottom: 5%;
+	width: clamp(88px, 8vw, 158px);
+	aspect-ratio: 1;
+	filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.5));
+	cursor: pointer;
+	pointer-events: auto;
+	transform-style: preserve-3d;
+	transition: transform 0.16s ease;
+	z-index: 0;
+}
+/* Both bars share one diagonal light so the cross reads as a single raised piece. */
+.gb-dpad::before,
+.gb-dpad::after {
+	content: "";
+	position: absolute;
+	border-radius: clamp(7px, 0.8vw, 13px);
+	background: linear-gradient(145deg, #5a5a64 0%, #34343b 46%, #17171c 100%);
+}
+.gb-dpad::before { left: 35%; right: 35%; top: 3%; bottom: 3%; }
+.gb-dpad::after { top: 35%; bottom: 35%; left: 3%; right: 3%; }
+/* centre dimple, sunk into the plastic (not a bump) */
+.gb-dpad-dot {
+	position: absolute;
+	inset: 41%;
+	border-radius: 50%;
+	background: radial-gradient(circle at 50% 62%, #17171c 0%, #26262c 100%);
+	box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.75), inset 0 -1px 2px rgba(255, 255, 255, 0.08);
+	z-index: 1;
+}
+.gb-dpad:hover {
+	transform: scale(1.07);
+}
+/* Rock the cross toward the pressed arm (set by JS). */
+.gb-dpad.is-left {
+	transform: perspective(560px) rotateY(-20deg) scale(0.99);
+}
+.gb-dpad.is-right {
+	transform: perspective(560px) rotateY(20deg) scale(0.99);
+}
+/* A / B buttons — a diagonal row (B low-left, A high-right) with the labels
+   leaning on the same diagonal, up toward the centre of the deck. */
+.gb-ab {
+	position: absolute;
+	right: 15%;
+	bottom: 7%;
+	display: flex;
+	align-items: flex-start;
+	gap: clamp(16px, 1.8vw, 34px);
+	transform: rotate(-25deg);
+	z-index: 0;
+}
+.gb-ab-btn {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+.gb-ab-btn i {
+	width: clamp(56px, 5.4vw, 96px);
+	aspect-ratio: 1;
+	border-radius: 50%;
+	background: radial-gradient(circle at 38% 26%, #ec86a9 0%, #c8406e 42%, #831941 100%);
+	box-shadow:
+		0 12px 22px rgba(0, 0, 0, 0.42),        /* deep drop shadow */
+		0 0 0 6px rgba(24, 12, 22, 0.14),        /* recessed socket ring */
+		inset 0 6px 9px rgba(255, 255, 255, 0.6), /* top gloss */
+		inset 0 -9px 13px rgba(70, 10, 33, 0.68); /* bottom rim */
+	cursor: pointer;
+	pointer-events: auto;
+	transition: transform 0.14s ease, box-shadow 0.14s ease;
+}
+.gb-ab-btn i:hover {
+	transform: translateY(-2px) scale(1.1);
+}
+.gb-ab-btn i:active {
+	transform: scale(0.93);
+	box-shadow:
+		0 4px 8px rgba(0, 0, 0, 0.4),
+		0 0 0 6px rgba(24, 12, 22, 0.18),
+		inset 0 6px 10px rgba(70, 10, 33, 0.5),
+		inset 0 -4px 7px rgba(255, 255, 255, 0.25);
+}
+.gb-ab-btn em {
+	margin-top: 7px;
+	font-family: 'Press Start 2P', monospace;
+	font-size: clamp(9px, 0.95vw, 15px);
+	font-style: normal;
+	color: #3a4cc0;
+}
+/* In-LCD tutorial hint, tucked into the bottom-right corner of the screen. */
+.gb-tutorial {
+	position: absolute;
+	right: 4%;
+	bottom: 5%;
+	max-width: 46%;
+	text-align: right;
+	font-family: 'Press Start 2P', monospace;
+	font-size: clamp(10px, 1.4vw, 18px);
+	line-height: 1.7;
+	letter-spacing: 1px;
+	color: #234d20;
+	text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
+	pointer-events: none;
+	z-index: 2;
+	animation: gb-tutorial-pulse 1.8s ease-in-out infinite;
+}
+@keyframes gb-tutorial-pulse {
+	50% { opacity: 0.5; }
+}
+@media (prefers-reduced-motion: reduce) {
+	.gb-tutorial { animation: none; }
+}
+/* SELECT / START — centred, on the same diagonal, labels leaning too. */
+.gb-startselect {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 9%;
+	display: flex;
+	justify-content: center;
+	z-index: 0;
+}
+.gb-ss-inner {
+	display: flex;
+	align-items: flex-start;
+	gap: clamp(22px, 2.4vw, 42px);
+	transform: rotate(-25deg);
+}
+.gb-ss-btn {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+.gb-ss-btn i {
+	width: clamp(42px, 4vw, 72px);
+	height: clamp(13px, 1.3vw, 20px);
+	border-radius: 999px;
+	background: linear-gradient(180deg, #a6a7b0 0%, #86878f 55%, #6d6e77 100%);
+	box-shadow:
+		0 6px 11px rgba(0, 0, 0, 0.34),
+		0 0 0 4px rgba(24, 20, 26, 0.12),
+		inset 0 3px 4px rgba(255, 255, 255, 0.6),
+		inset 0 -3px 5px rgba(0, 0, 0, 0.45);
+	cursor: pointer;
+	pointer-events: auto;
+	transition: transform 0.14s ease, box-shadow 0.14s ease;
+}
+.gb-ss-btn i:hover {
+	transform: translateY(-1px) scale(1.06);
+}
+.gb-ss-btn i:active {
+	transform: scale(0.94);
+	box-shadow:
+		0 2px 5px rgba(0, 0, 0, 0.4),
+		0 0 0 4px rgba(24, 20, 26, 0.16),
+		inset 0 3px 6px rgba(0, 0, 0, 0.4);
+}
+.gb-ss-btn i:hover {
+	transform: scale(1.14);
+}
+.gb-ss-btn em {
+	margin-top: 8px;
+	font-family: 'Press Start 2P', monospace;
+	font-size: clamp(7px, 0.72vw, 11px);
+	font-style: normal;
+	color: #3a4cc0;
+}
+/* Speaker grille — angled slots, bottom-right corner. */
+.gb-speaker {
+	position: absolute;
+	right: 4%;
+	bottom: 3%;
+	width: clamp(104px, 10vw, 176px);
+	height: clamp(84px, 8vw, 140px);
+	background: repeating-linear-gradient(-24deg, rgba(74, 74, 82, 0.55) 0 5px, transparent 5px 19px);
+	border-radius: 6px;
+	z-index: 0;
+}
+
+/* Rotating holographic foil sheen (TCG holo card feel). */
+.pkmn-holo {
+	position: absolute;
+	inset: -25%;
+	pointer-events: none;
+	z-index: 0;
+	background: conic-gradient(from 0deg at 50% 50%,
+		rgba(120, 240, 255, 0.16),
+		rgba(255, 150, 220, 0.18),
+		rgba(255, 225, 120, 0.14),
+		rgba(150, 255, 200, 0.14),
+		rgba(120, 240, 255, 0.16));
+	mix-blend-mode: screen;
+	filter: blur(10px);
+	animation: pkmn-holo-spin 30s linear infinite;
+}
+/* Slow energy sunburst radiating from the centre. */
+.pkmn-rays {
+	position: absolute;
+	left: 50%;
+	top: 42%;
+	width: 180vmax;
+	height: 180vmax;
+	transform: translate(-50%, -50%);
+	pointer-events: none;
+	z-index: 0;
+	background: repeating-conic-gradient(from 0deg at 50% 50%,
+		rgba(255, 255, 255, 0.05) 0deg 5deg,
+		transparent 5deg 17deg);
+	opacity: 0.4;
+	animation: pkmn-rays-spin 70s linear infinite;
+}
+@keyframes pkmn-holo-spin { to { transform: rotate(360deg); } }
+@keyframes pkmn-rays-spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+
 /* Off-screen: freeze everything so the section costs nothing while scrolled away */
-.pokemon-fx.paused span { animation-play-state: paused; }
+.pokemon-fx.paused .pokemon-swarm span,
+.pokemon-fx.paused .pkmn-holo,
+.pokemon-fx.paused .pkmn-rays { animation-play-state: paused; }
 
 @keyframes poke-breathe {
 	0%, 100% { transform: translate(-50%, -50%) scale(0.98); opacity: 0.08; }
@@ -99,6 +388,96 @@
 @media (prefers-reduced-motion: reduce) {
 	.pokemon-bg::before,
 	.pokemon-bg::after,
-	.pokemon-fx span { animation: none; }
-	.pokemon-fx span { opacity: 0.8; }
+	.pkmn-holo,
+	.pkmn-rays,
+	.pokemon-swarm span { animation: none; }
+	.pokemon-swarm span { opacity: 0.8; }
+}
+
+/* ===== Header styled as a Pokédex: red body, blue lens, LED lights, and the
+   title/description on the "screen". Wide & short on desktop. ===== */
+.pkmn-dex {
+	position: relative;
+	max-width: min(96%, 1040px);
+	margin: 0 auto;
+	padding: 12px clamp(14px, 1.6vw, 20px) clamp(14px, 1.6vw, 20px);
+	background: linear-gradient(180deg, #ef3d43 0%, #cc2a30 100%);
+	border-radius: 22px;
+	border: 3px solid #8f1c22;
+	box-shadow:
+		0 22px 50px rgba(18, 10, 38, 0.3),
+		inset 0 3px 0 rgba(255, 255, 255, 0.28),
+		inset 0 -5px 10px rgba(0, 0, 0, 0.28);
+}
+/* Top bar: big blue lens + the classic red/yellow/green LEDs. */
+.pkmn-dex-top {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	padding: 4px 6px 12px;
+}
+.pkmn-dex-lens {
+	flex: none;
+	width: 46px;
+	height: 46px;
+	border-radius: 50%;
+	border: 4px solid #f4f4f4;
+	background: radial-gradient(circle at 34% 30%, #ffffff 0 8%, #a5e6ff 20%, #34a9e6 58%, #1c6db0 100%);
+	box-shadow: 0 3px 7px rgba(0, 0, 0, 0.4), inset 0 0 6px rgba(255, 255, 255, 0.5);
+}
+.pkmn-dex-leds {
+	display: flex;
+	gap: 9px;
+}
+.pkmn-dex-leds i {
+	width: 14px;
+	height: 14px;
+	border-radius: 50%;
+	border: 1.5px solid rgba(0, 0, 0, 0.28);
+}
+.pkmn-dex-leds i:nth-child(1) { background: #ff5a5a; box-shadow: 0 0 7px rgba(255, 90, 90, 0.7); }
+.pkmn-dex-leds i:nth-child(2) { background: #ffd23f; box-shadow: 0 0 7px rgba(255, 210, 63, 0.7); }
+.pkmn-dex-leds i:nth-child(3) { background: #4fdd6a; box-shadow: 0 0 7px rgba(79, 221, 106, 0.7); }
+/* The screen holding the text. */
+.pkmn-dex-screen {
+	background: linear-gradient(180deg, #ffffff 0%, #f1f3f6 100%);
+	border-radius: 14px;
+	border: 2px solid rgba(0, 0, 0, 0.12);
+	box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.14), inset 0 0 0 4px rgba(255, 255, 255, 0.9);
+	padding: clamp(20px, 2.6vw, 32px) clamp(28px, 5vw, 64px);
+}
+.pkmn-title-text {
+	color: #161616 !important;
+}
+.pkmn-desc-text {
+	color: #374151;
+}
+.pkmn-desc-text b {
+	color: #e0a400;
+}
+
+/* ===== Service cards fanned out like a poker hand ===== */
+.pkmn-hand {
+	min-height: 320px;
+}
+@media (min-width: 640px) {
+	.pkmn-hand {
+		min-height: 700px;
+	}
+	/* Each card is rotated into the fan around its bottom edge; hovering a card
+	   lifts it up, straightens it and brings it to the front. */
+	.pkmn-fan-tilt {
+		transform-origin: bottom center;
+		transform: rotate(calc((var(--i) - 2.5) * 4deg));
+		transition: transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
+		will-change: transform;
+	}
+	.pkmn-card-slot:hover,
+	.pkmn-card-slot.is-selected {
+		z-index: 60 !important;
+	}
+	.pkmn-card-slot:hover .pkmn-fan-tilt,
+	.pkmn-card-slot.is-selected .pkmn-fan-tilt {
+		transform: translateY(-78px) rotate(0deg) scale(1.06);
+	}
 }

@@ -8,8 +8,8 @@ import Works from './Works';
 import Contact from './Contact';
 import MyCompany from './MyCompany';
 import ScrollToTop from './ScrollToTop';
-import Build from './Build';
 import Projects from './Projects';
+import Footer from './Footer';
 
 export {
   Hero,
@@ -21,7 +21,7 @@ export {
   Works,
   Contact,
   MyCompany,
-  Build,
+  Footer,
   ScrollToTop,
   EarthCanvas, 
   BallCanvas, 
