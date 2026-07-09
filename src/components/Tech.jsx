@@ -133,11 +133,21 @@ const Tech = () => {
 	const [frozen, setFrozen] = useState(false); // pause the belt while a flag is expanded
 	const worldRef = useRef(null);
 	const [scale, setScale] = useState(1);
+	const [offsetX, setOffsetX] = useState(0);
 
 	useEffect(() => {
 		const el = worldRef.current;
 		if (!el) return;
-		const update = () => setScale(el.clientWidth / 620);
+		const update = () => {
+			const w = el.clientWidth;
+			// Desktop fits the whole 620px scene to the width. Mobile zooms IN so the
+			// sushi + logos read at a usable size; the overscan is clipped by
+			// .sushi-world's overflow:hidden and re-centred via offsetX.
+			const zoom = window.innerWidth < 768 ? 2.04 : 1;
+			const s = (w / 620) * zoom;
+			setScale(s);
+			setOffsetX((w - 620 * s) / 2);
+		};
 		update();
 		const ro = new ResizeObserver(update);
 		ro.observe(el);
@@ -166,7 +176,7 @@ const Tech = () => {
 			</div>
 
 			<div className='sushi-world' ref={worldRef} style={{ height: `${400 * scale}px` }}>
-				<div className='world' style={{ transform: `scale(${scale})` }}>
+				<div className='world' style={{ transform: `translateX(${offsetX}px) scale(${scale})` }}>
 					<div className='room'>
 						<div className='lantern'>
 							<span><a>光</a></span>
