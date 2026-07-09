@@ -37,10 +37,10 @@ const Navbar = () => {
 		   <nav
 			   className={`${styles.paddingX} w-full flex items-center py-5 top-0 relative z-[100] bg-white-200 transition-all duration-500 ease-in-out ${hideOnDesktop ? 'lg:opacity-0 lg:pointer-events-none lg:-translate-y-4' : 'opacity-100 lg:translate-y-0'}`}>
 			<div className='w-full flex items-center'>
-				<div className='flex-1 flex items-center gap-4 justify-start'>
+				<div className='flex-1 min-w-0 flex items-center gap-4 justify-start'>
 				<Link
 					to='/'
-					className='flex items-center gap-2'
+					className='flex items-center gap-2 min-w-0'
 					onClick={() => {
 						setActive("");
 						window.scrollTo(0, 0);
@@ -51,9 +51,9 @@ const Navbar = () => {
 						width="48"
 						height="48"
 						decoding="async"
-						className='w-[48px] h-[48px] object-contain hover:scale-110 transition-transform duration-200'
+						className='w-10 h-10 sm:w-[48px] sm:h-[48px] object-contain hover:scale-110 transition-transform duration-200 shrink-0'
 					/>
-					<p className='text-black-100 text-[18px] font-bold cursor-pointer'>
+					<p className='text-black-100 text-[16px] sm:text-[18px] font-bold cursor-pointer truncate'>
 						Zack Isaza
 						<span className='-mt-2 sm:block hidden text-[#565656]'>
 							<Typewriter content={t("navbar.tagline")} speed={26} startDelay={80} />
@@ -97,7 +97,7 @@ const Navbar = () => {
 					<img
 						src={toggle ? close : menu}
 						alt='menu'
-						className='mr-3 w-[28px] h-[28px] object-contain cursor-pointer hover:scale-110 duration-200'
+						className='w-[28px] h-[28px] object-contain cursor-pointer hover:scale-110 duration-200 shrink-0'
 						onClick={() => setToggle(!toggle)}
 					/>
 

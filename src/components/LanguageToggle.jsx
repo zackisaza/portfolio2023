@@ -28,7 +28,7 @@ const renderFlag = (code, w, h) => {
 // Per-context sizing for the segmented pill.
 const SIZE_PRESETS = {
 	desktop: { segWidth: 66, segHeight: 34, gap: 2, padding: 4, flagW: 22, flagH: 15, font: 12.5 },
-	mobile: { segWidth: 58, segHeight: 30, gap: 2, padding: 3, flagW: 20, flagH: 13, font: 11.5 },
+	mobile: { segWidth: 50, segHeight: 30, gap: 2, padding: 3, flagW: 18, flagH: 12, font: 11 },
 	modal: { segWidth: 92, segHeight: 46, gap: 4, padding: 5, flagW: 30, flagH: 20, font: 16 },
 	sidebarMini: { segWidth: 52, segHeight: 30, gap: 2, padding: 3, flagW: 18, flagH: 12, font: 10.5 },
 };

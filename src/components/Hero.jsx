@@ -73,7 +73,7 @@ const Hero = () => {
 	return (
 		<section ref={heroRef} className='relative w-full h-screen mx-auto'>
 			<div
-				className={`${styles.paddingX} mt-[-600px] lg:mt-20 absolute inset-0 top-[200px] max-w-7xl mx-auto z-10 flex flex-col items-center justify-center gap-5 lg:flex-row lg:items-start lg:justify-start pointer-events-none`}>
+				className={`${styles.paddingX} mt-[-680px] lg:mt-20 absolute inset-0 top-[200px] max-w-7xl mx-auto z-10 flex flex-col items-center justify-center gap-5 lg:flex-row lg:items-start lg:justify-start pointer-events-none`}>
 				{/* Watermark mobile-only */}
 				<img
 					src={wolfcave}
@@ -136,10 +136,10 @@ const Hero = () => {
 						))}
 					</div>
 
-					{/* Startup mini-card */}
+					{/* Startup mini-card — desktop only; on mobile it collided with the 3D computer */}
 					<motion.a
 						href='#mycompany'
-						className='group mt-4 lg:ml-5 inline-flex items-center gap-4 rounded-2xl border border-black-100/10 bg-white/70 backdrop-blur-md px-4 py-3 shadow-lg hover:shadow-xl hover:border-black-100/25 transition-all duration-300'
+						className='group mt-4 lg:ml-5 hidden lg:inline-flex items-center gap-4 rounded-2xl border border-black-100/10 bg-white/70 backdrop-blur-md px-4 py-3 shadow-lg hover:shadow-xl hover:border-black-100/25 transition-all duration-300'
 						whileHover={{ scale: 1.02 }}
 						whileTap={{ scale: 0.98 }}>
 						<img
@@ -177,7 +177,7 @@ const Hero = () => {
 					</motion.a>
 				</div>
 			</div>
-			<div className='absolute inset-0 z-0 pointer-events-auto top-24 sm:top-28 md:top-0' style={{ touchAction: 'pan-y' }}>
+			<div className='absolute inset-0 z-0 pointer-events-auto top-40 sm:top-44 md:top-0' style={{ touchAction: 'pan-y' }}>
 				<Suspense fallback={null}>
 					<ComputersCanvasLazy active={heroInView} sectionIndex={0} />
 				</Suspense>
