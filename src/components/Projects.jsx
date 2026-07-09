@@ -111,7 +111,7 @@ const Projects = () => {
 			initial='hidden'
 			whileInView='show'
 			viewport={{ once: true, amount: 0.1 }}
-			className='px-6 sm:px-16 py-10 sm:py-16 max-w-[1600px] mx-auto relative z-10'
+			className='px-3 sm:px-16 py-10 sm:py-16 max-w-[1600px] mx-auto relative z-10'
 		>
 			<span className='hash-span' id='projects'>
 				&nbsp;

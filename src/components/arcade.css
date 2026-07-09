@@ -983,23 +983,73 @@
 /* --- Mobile: portrait cabinet (same footprint as before), tap to reveal --- */
 @media (max-width: 767px) {
 	.arcade-scene .arcade {
-		--u: clamp(7px, 2.3vw, 11px);
+		/* Grow the whole cabinet to fill the viewport width on mobile so the
+		   screen reads clearly (was clamped at 11px → tiny screen). */
+		--u: clamp(8px, 2.7vw, 13px);
 		--w: 36;
-		height: calc(75 * var(--u));
+		/* Cabinet must stay continuous: height = 40.75u + screen height, so the
+		   bottom-anchored coin box meets the control deck with NO gap (a larger
+		   value detaches the coin box and the page shows through, splitting it). */
+		height: calc(94.75 * var(--u));
 	}
+	/* Taller CRT on mobile so the text can grow and breathe (34u → 54u). */
 	.arcade-scene .screen {
-		height: calc(34 * var(--u));
+		height: calc(54 * var(--u));
 	}
+	/* Thinner side bezel on mobile: the frame is a fixed 15u, which eats 42% of a
+	   36u cabinet (vs 28% on the 54u desktop). Trimming to 10u restores desktop's
+	   screen-to-frame ratio and hands the extra width to the CRT. */
+	.arcade-scene .glass {
+		width: calc(100% - calc(10 * var(--u)));
+	}
+	.arcade-scene .screen::before {
+		width: calc(100% - calc(7 * var(--u)));
+		left: calc(3.5 * var(--u));
+	}
+	/* Controls follow the taller screen: top = 14.75u + screen height. */
 	.arcade-scene .bot-screen {
-		top: calc(48.75 * var(--u));
+		top: calc(68.75 * var(--u));
 	}
+	/* The tutorial labels' absolute % positions collide at this width, so on mobile
+	   we reflow them into one tidy centered row silkscreened on the coin box's dark
+	   top strip (which meets the control deck) — same spirit as desktop, no gap. */
 	.arcade-scene .arcade .deck-labels {
-		top: calc(52.1 * var(--u));
+		top: calc(74.4 * var(--u));
+		height: auto;
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		align-items: center;
+		gap: calc(0.3 * var(--u)) calc(0.7 * var(--u));
+		padding: 0 calc(1 * var(--u));
 	}
-	.arcade-scene .arcade .crt-name {
-		font-size: calc(2.6 * var(--u));
+	.arcade-scene .arcade .deck-labels .lab {
+		position: static;
+		transform: none;
 	}
 	.arcade-scene .arcade .deck-labels .lab span {
-		font-size: calc(0.62 * var(--u));
+		font-size: calc(0.82 * var(--u));
 	}
+	/* Enlarged CRT typography for the taller screen (~1.6x). */
+	.arcade-scene .arcade .crt-body { gap: calc(0.85 * var(--u)); }
+	.arcade-scene .arcade .crt-stage { font-size: calc(1.35 * var(--u)); }
+	.arcade-scene .arcade .crt-status,
+	.arcade-scene .arcade .crt-screenno { font-size: calc(1.25 * var(--u)); }
+	.arcade-scene .arcade .crt-kicker { font-size: calc(1.3 * var(--u)); }
+	.arcade-scene .arcade .crt-name {
+		/* Big but still fits long single-word names (e.g. "ManagerPyme") on one line. */
+		font-size: calc(2.5 * var(--u));
+		overflow-wrap: break-word;
+	}
+	.arcade-scene .arcade .crt-tag { font-size: calc(1.7 * var(--u)); }
+	.arcade-scene .arcade .crt-desc {
+		font-size: calc(1.55 * var(--u));
+		-webkit-line-clamp: 9;
+	}
+	.arcade-scene .arcade .crt-metric b { font-size: calc(1.6 * var(--u)); }
+	.arcade-scene .arcade .crt-metric span { font-size: calc(1.25 * var(--u)); }
+	.arcade-scene .arcade .crt-chip { font-size: calc(1.4 * var(--u)); }
+	.arcade-scene .arcade .crt-play { font-size: calc(1.3 * var(--u)); }
+	.arcade-scene .arcade .crt-code { font-size: calc(1.4 * var(--u)); }
+	.arcade-scene .arcade .crt-private { font-size: calc(1.3 * var(--u)); }
 }
