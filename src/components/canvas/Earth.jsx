@@ -1,7 +1,6 @@
 import { Suspense, useState, useEffect, useRef } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, useGLTF, AdaptiveDpr, Float } from '@react-three/drei';
-import { Vector3 } from 'three';
 import CanvasLoader from '../Loader'
 import { useCanvasBudget } from "../../context/CanvasBudgetContext";
 
@@ -9,34 +8,25 @@ const Earth = ({ visible = true }) => {
 
 	const earth = useGLTF('./planet/scene.gltf')
 	const groupRef = useRef(null);
-	// entrance/exit animation multiplier (starts small, eases to 1)
-	const entranceScale = useRef(0.25);
-	const neutralPosition = useRef(new Vector3(0, 0, 0));
 	const baseScale = 3.4;
+	// Centered. The planet fits fully thanks to the pulled-back camera below.
+	const posY = -0.7;
 
 	useFrame(({ clock }) => {
 		const group = groupRef.current;
 		if (!group) return;
-		// entrance/exit target
-		const targetEntrance = visible ? 1 : 0.05;
-		// entrance scale easing
-		const easeIn = 0.08;
-		entranceScale.current += (targetEntrance - entranceScale.current) * easeIn;
-
-		// apply scale and a very slow rotation for subtle motion
-		group.scale.setScalar(baseScale * entranceScale.current);
+		// No entrance animation: the planet is always at full scale and a fixed
+		// position. Only ambient motion below (slow spin + Float bobbing).
+		group.scale.setScalar(baseScale);
+		group.position.y = posY;
 		const t = clock.getElapsedTime();
-		group.rotation.y = t * 0.12; // slow spin
-			// ease position Y from -1 up to 0 when visible (so it visibly rises on entrance)
-			const targetY = visible ? 0 : -1.0;
-			group.position.y += (targetY - group.position.y) * 0.12;
+		group.rotation.y = t * 0.12; // slow ambient spin
 	});
 
 	useEffect(() => {
 		if (groupRef.current) {
-			// start lower so entrance animation is visible
-			groupRef.current.position.copy(neutralPosition.current).add(new Vector3(0, -1.0, 0));
-			groupRef.current.scale.setScalar(baseScale * entranceScale.current);
+			groupRef.current.position.set(0, posY, 0);
+			groupRef.current.scale.setScalar(baseScale);
 		}
 	}, []);
 
@@ -130,7 +120,7 @@ const EarthCanvas = ({ sectionIndex = 6 }) => {
 						fov: 45,
 						near: 0.1,
 						far: 200,
-						position: [-4,3,6]
+						position: [-5, 3.75, 7.5]
 					}}>
 					<Suspense fallback={<CanvasLoader />}>
 						<OrbitControls

@@ -1,11 +1,9 @@
 import { lazy, Suspense } from "react";
-import { motion } from "framer-motion";
 
 import { styles } from "../styles";
 // Lazy-load EarthCanvas to defer three.js until the contact section is viewed
 const EarthCanvasLazy = lazy(() => import("./canvas/Earth"));
 import { SectionWrapper } from "../hoc";
-import { fadeIn } from "../utils/motion";
 import { useLanguage } from "../context/LanguageContext";
 import Typewriter from "./Typewriter";
 
@@ -34,24 +32,22 @@ const Contact = () => {
 	const { t } = useLanguage();
 
 	return (
-		<div className='xl:mt-12 xl:flex-row xl:items-end flex-col-reverse flex gap-10 overflow-hidden'>
-			<motion.div
-				variants={fadeIn("up", "tween", 0.15, 0.8)}
-				className='flex flex-col justify-end flex-[0.75] p-8 pb-12 rounded-2xl'>
-				<div className='flex items-center gap-3'>
+		<div className='xl:mt-12 xl:flex-row xl:items-end flex-col-reverse flex gap-10 xl:overflow-hidden w-full min-w-0 max-w-full'>
+			<div className='flex flex-col justify-end flex-[0.75] p-8 pb-16 rounded-2xl items-center text-center xl:items-start xl:text-left w-full min-w-0 translate-y-[96px] xl:translate-y-0'>
+				<div className='flex items-center justify-center gap-3 xl:justify-start'>
 					<span className='h-px w-9 bg-tertiary' />
 					<p className='text-[13px] font-semibold uppercase tracking-[0.25em] text-tertiary'>
 						<Typewriter content={t("contact.subtitle")} speed={26} startDelay={60} />
 					</p>
 				</div>
 
-				<h3 className={`${styles.sectionHeadText} !text-black-200 mt-3`}><Typewriter content={t("contact.title")} speed={26} startDelay={120} /></h3>
+				<h3 className={`${styles.sectionHeadText} !text-center xl:!text-left !text-black-200 mt-3`}><Typewriter content={t("contact.title")} speed={26} startDelay={120} /></h3>
 
 				<p className='mt-5 max-w-md text-[16px] leading-7 text-black-100/70'>
 					{t("contact.description")}
 				</p>
 
-				<div className='mt-8 flex max-w-md flex-col gap-3'>
+				<div className='mt-8 flex w-full max-w-md flex-col gap-3 text-left'>
 					{/* WhatsApp */}
 					<a
 						href={WHATSAPP_URL}
@@ -89,15 +85,13 @@ const Contact = () => {
 						<ArrowIcon />
 					</a>
 				</div>
-			</motion.div>
+			</div>
 
-			<motion.div
-				variants={fadeIn("up", "tween", 0.3, 0.9)}
-				className='xl:flex-1 xl:-translate-y-16 h-[380px] sm:h-[460px] md:h-[520px] xl:h-[560px]'>
+			<div className='xl:flex-1 -translate-y-[96px] xl:-translate-y-16 w-full min-w-0 max-w-full overflow-hidden h-[440px] sm:h-[540px] md:h-[620px] xl:h-[660px]'>
 				<Suspense fallback={null}>
 					<EarthCanvasLazy sectionIndex={6} />
 				</Suspense>
-			</motion.div>
+			</div>
 		</div>
 	);
 };
