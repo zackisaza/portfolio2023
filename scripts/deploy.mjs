@@ -1,132 +1,71 @@
 #!/usr/bin/env node
+//
+// Deploys the built site to the `gh-pages` branch of THIS repo
+// (zackisaza.github.io), which is what serves https://zackisaza.github.io/.
+//
+// It builds, then replaces the gh-pages tree with `dist/`, re-adding the two
+// files Vite does not emit: `.nojekyll` and `404.html` (an exact copy of
+// index.html — the SPA fallback so react-router deep links work on Pages).
+//
+// Usage: npm run deploy
 
-import { execSync } from 'child_process';
-import { existsSync, rmSync, cpSync, mkdirSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { execSync } from "child_process";
+import { existsSync, rmSync, cpSync, writeFileSync, copyFileSync } from "fs";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
+import { tmpdir } from "os";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const projectRoot = join(__dirname, '..');
-const deployRepo = 'https://github.com/zackisaza/portfolio2024.git';
-const tempDeployDir = join(projectRoot, '.deploy-temp');
+const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+const dist = join(root, "dist");
+const worktree = join(tmpdir(), `ghp-deploy-${process.pid}`);
+const BRANCH = "gh-pages";
 
-const deployProject = async () => {
-  console.log('🚀 Iniciando proceso de deploy...');
+const run = (cmd, cwd = root) => execSync(cmd, { cwd, stdio: "inherit" });
+const out = (cmd, cwd = root) => execSync(cmd, { cwd, encoding: "utf8" }).trim();
 
+const cleanup = () => {
   try {
-    // 1. Limpiar directorio temporal si existe
-    if (existsSync(tempDeployDir)) {
-      console.log('🧹 Limpiando directorio temporal...');
-      rmSync(tempDeployDir, { recursive: true, force: true });
-    }
-
-    // 2. Construir el proyecto
-    console.log('🔨 Construyendo el proyecto...');
-    execSync('npm run build', { 
-      cwd: projectRoot, 
-      stdio: 'inherit' 
-    });
-
-    // 3. Clonar el repositorio de deploy
-    console.log('📥 Clonando repositorio de deploy...');
-    execSync(`git clone "${deployRepo}" "${tempDeployDir}"`, { 
-      stdio: 'inherit' 
-    });
-
-    // 4. Limpiar el contenido del repositorio de deploy (excepto .git)
-    console.log('🧹 Limpiando repositorio de deploy...');
-    const deployContents = execSync('ls -la', { 
-      cwd: tempDeployDir, 
-      encoding: 'utf8' 
-    }).split('\n');
-    
-    for (const item of deployContents) {
-      const fileName = item.split(/\s+/).pop();
-      if (fileName && fileName !== '.' && fileName !== '..' && fileName !== '.git') {
-        const itemPath = join(tempDeployDir, fileName);
-        if (existsSync(itemPath)) {
-          rmSync(itemPath, { recursive: true, force: true });
-        }
-      }
-    }
-
-    // 5. Copiar archivos del build
-    console.log('📋 Copiando archivos del build...');
-    const distDir = join(projectRoot, 'dist');
-    if (!existsSync(distDir)) {
-      throw new Error('❌ Directorio dist no encontrado. ¿Se ejecutó el build correctamente?');
-    }
-
-    cpSync(distDir, tempDeployDir, { 
-      recursive: true,
-      filter: (src, dest) => {
-        // No copiar la carpeta .git del dist (si existiera)
-        return !src.includes('.git');
-      }
-    });
-
-    // 6. Verificar si hay cambios
-    const gitStatus = execSync('git status --porcelain', { 
-      cwd: tempDeployDir, 
-      encoding: 'utf8' 
-    });
-
-    console.log('📊 Git status:', gitStatus.trim() || 'Sin cambios detectados');
-
-    // Forzar deploy por ahora para solucionar el problema
-    // if (!gitStatus.trim()) {
-    //   console.log('✅ No hay cambios para deploy. El build es idéntico al deploy actual.');
-    //   rmSync(tempDeployDir, { recursive: true, force: true });
-    //   return;
-    // }
-
-    // 7. Hacer commit y push
-    console.log('📤 Haciendo commit y push...');
-    
-    // Configurar git user si no está configurado
-    try {
-      execSync('git config user.name', { cwd: tempDeployDir, stdio: 'pipe' });
-    } catch {
-      execSync('git config user.name "Deploy Bot"', { cwd: tempDeployDir });
-    }
-    
-    try {
-      execSync('git config user.email', { cwd: tempDeployDir, stdio: 'pipe' });
-    } catch {
-      execSync('git config user.email "deploy@portfolio.com"', { cwd: tempDeployDir });
-    }
-
-    // Añadir todos los archivos
-    execSync('git add .', { cwd: tempDeployDir, stdio: 'inherit' });
-    
-    // Crear commit con timestamp (permitir commits vacíos si no hay cambios)
-    const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
-    const commitFlags = gitStatus.trim() ? '' : '--allow-empty';
-    execSync(`git commit ${commitFlags} -m "Deploy: ${timestamp}"`, { 
-      cwd: tempDeployDir, 
-      stdio: 'inherit' 
-    });
-    
-    // Push al repositorio
-    execSync('git push origin main', { 
-      cwd: tempDeployDir, 
-      stdio: 'inherit' 
-    });
-
-    console.log('✅ Deploy completado exitosamente!');
-    console.log(`🌐 Sitio desplegado en: ${deployRepo}`);
-
-  } catch (error) {
-    console.error('❌ Error durante el deploy:', error.message);
-    process.exit(1);
-  } finally {
-    // Limpiar directorio temporal
-    if (existsSync(tempDeployDir)) {
-      rmSync(tempDeployDir, { recursive: true, force: true });
-    }
+    execSync(`git worktree remove "${worktree}" --force`, { cwd: root, stdio: "ignore" });
+  } catch {
+    /* worktree may not exist yet */
   }
+  if (existsSync(worktree)) rmSync(worktree, { recursive: true, force: true });
 };
 
-// Ejecutar el deploy
-deployProject();
+try {
+  // 1. Build
+  console.log("🔨 Building…");
+  run("npm run build");
+  if (!existsSync(dist)) throw new Error("dist/ not found after build.");
+
+  // 2. Fresh worktree checked out from origin/gh-pages
+  cleanup();
+  console.log("📥 Preparing gh-pages worktree…");
+  run(`git fetch origin ${BRANCH}`);
+  run(`git worktree add -B ${BRANCH} "${worktree}" origin/${BRANCH}`);
+
+  // 3. Replace the published tree with the fresh build
+  console.log("📋 Copying build…");
+  run("git rm -rf . --quiet", worktree);
+  cpSync(dist, worktree, { recursive: true });
+
+  // 4. Files the build does not emit
+  writeFileSync(join(worktree, ".nojekyll"), "");
+  copyFileSync(join(worktree, "index.html"), join(worktree, "404.html"));
+
+  // 5. Commit + push (skip if nothing changed)
+  run("git add -A", worktree);
+  if (!out("git status --porcelain", worktree)) {
+    console.log("✅ No changes — gh-pages already up to date.");
+  } else {
+    const stamp = new Date().toISOString().slice(0, 19).replace("T", " ");
+    run(`git commit -m "deploy: ${stamp}"`, worktree);
+    run(`git push origin ${BRANCH}`, worktree);
+    console.log("🚀 Deployed → https://zackisaza.github.io/");
+  }
+} catch (err) {
+  console.error("❌ Deploy failed:", err.message);
+  process.exitCode = 1;
+} finally {
+  cleanup();
+}

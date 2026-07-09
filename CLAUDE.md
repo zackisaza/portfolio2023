@@ -1,47 +1,71 @@
 # Project context — zackisaza.github.io (portfolio)
 
-Vite + React + Three.js portfolio. Repo: `zackisaza/zackisaza.github.io` (GitHub **user site**, served at the root domain https://zackisaza.github.io/).
+Personal portfolio. **Vite + React 18 + Three.js** (react-three-fiber/drei), Tailwind, framer-motion. Repo `zackisaza/zackisaza.github.io` is a GitHub **user site** served at the root domain https://zackisaza.github.io/.
 
-- Active development branch: **`2026`**.
-- Default branch on remote: `master` (stale).
-- Dev server: `npm run dev` (Vite).
+- Dev branch: **`2026`** · remote default `master` (stale) · live branch **`gh-pages`** (built output).
+- `npm run dev` (Vite) · `npm run build` · `npm run deploy` (see Deploy) · `npm run lint`.
+- Heavy 3D everywhere; canvases are gated to the viewport to save GPU (see CanvasBudget).
 
-## Deploy — how the live site actually updates
+## Layout & section map
 
-The live site is served from the **`gh-pages` branch**, which holds the **built output** (not source). To publish changes you must build and push `dist` to `gh-pages`.
+`src/App.jsx` renders the sections top-to-bottom, each wrapped in a colored band with a mountain-silhouette **`.section-transition`** between them (the `pt-[360px]`/`pt-[…]` offsets clear that overlay). Section → component → styles:
 
-> ⚠️ **The in-repo deploy tooling is STALE — do NOT use it.** Both
-> `.github/workflows/deploy.yml` (triggers on push to `2025`) and
-> `scripts/deploy.mjs` (`npm run deploy`) build and push to the **old**
-> `zackisaza/portfolio2024` repo, which is not the live site. Pushing source
-> to `2026`/`master` does **not** deploy.
+| Section | Component(s) | Styles / canvas |
+|---|---|---|
+| Navbar | `Navbar.jsx`, `LanguageToggle.jsx`, `SideNavbar.jsx` | `styles.js` |
+| Hero | `Hero.jsx` | 3D PC `canvas/Computers.jsx` (lazy) |
+| About | `About.jsx` | `styles.js` |
+| Projects | `Projects.jsx`, `ArcadeFighters.jsx` | **`arcade.css`** (CSS-only arcade cabinet) |
+| Experience | `Experience.jsx` | `bento.css` |
+| Stack | `Tech.jsx` | **`sushiroom.css`** (CodePen sushi room) |
+| Services/Works | `Works.jsx` (cards), `PokemonBackground.jsx` (Game Boy), `BoosterBox3D.jsx` (3D pack) | **`pokemon.css`**, card styles in `index.css` (`.tcg-card`, `.box3d-wrap`) |
+| My Startup | `MyCompany.jsx` | wolfcave 3D |
+| Contact | `Contact.jsx` | 3D globe `canvas/Earth.jsx` (lazy) |
+| Footer | `Footer.jsx` | |
 
-### Correct manual deploy
+Shared: `hoc/SectionWrapper.jsx` (adds `styles.padding max-w-7xl mx-auto`), `styles.js` (typography/padding tokens), `translations/index.js` + `context/LanguageContext` (i18n; `useLanguage()` → `t()`/`language`), `index.css` (global + TCG card + 3D-box styles).
+
+Contexts (`src/context/`): `LanguageContext`, `CanvasBudgetContext` (viewport-gates 3D canvases via `frameloop`/suspend), `ServicesGameContext` (Game Boy state, below), `BallSlotsContext`.
+
+## The Game Boy / cards subsystem (Services section)
+
+Two sibling components coordinated by **`ServicesGameContext`** (`opened`, `selected`, `flipped`, `pressA/pressB/move`, `registerBoxTrigger`):
+- **`PokemonBackground.jsx`** = the Game Boy console: absolute-positioned green LCD (`.gb-screen`/`.gb-lcd` with a drifting Kanto sprite swarm), D-pad, A/B, START/SELECT, speaker, and the in-LCD tutorial (`.gb-tutorial`). The A button opens the box; the D-pad changes the selected card; B flips it.
+- **`Works.jsx`** = the Pokémon TCG cards + the openable **`BoosterBox3D`** booster pack. Desktop deals the cards into a poker-hand fan (`origin.on`-driven `deal`/`openProgress`); mobile skips the fan (`origin.on` false → cards shown flat).
+- Initial state `opened` starts `false` (box closed) except for reduced-motion users. `BoosterBox3D` has `<WebGLBoundary onFail={onOpen}>` — if WebGL can't init it auto-opens (this fires in headless, so the closed state can't be tested headlessly).
+
+## Mobile-responsive notes (breakpoint: Tailwind `sm` = 640px; mobile = `<640`)
+
+Desktop is considered done — mobile work is scoped to base classes / `@media (max-width: 639px)` (or `767px` for the arcade), leaving `sm:`/`xl:` for desktop. When touching a shared file, keep desktop untouched.
+
+- **Hero** (`Hero.jsx`, `Navbar.jsx`, `LanguageToggle.jsx`): navbar left flex needs `min-w-0` + `truncate` or the language toggle overlaps the name. WolfCave card is `hidden lg:inline-flex`. The 3D PC container top offset and the text block's negative `mt` position it on mobile.
+- **Projects / arcade** (`arcade.css` `@media (max-width:767px)`): the entire cabinet scales from one unit `--u` (`clamp(8px,2.7vw,13px)`) and width `--w:36`. **The coin box `.bot` is bottom-anchored; the body is top-anchored — they must touch or the page bg shows through and splits the cabinet. Formula: `.arcade height = 40.75u + .screen height`.** Controls sit in the reserved bottom strip.
+- **Stack / sushi** (`Tech.jsx`): the 620×400 scene is scaled to fit width; on mobile it's a **zoom** (`zoom = 2.04`, `scale = (clientWidth/620)*zoom`) re-centred with a computed `translateX` while `.sushi-world` clips the overscan.
+- **Services / Game Boy** (`pokemon.css` `@media (max-width:639px)` + `App.jsx`): section is `pb-[640px]` to reserve the control deck. `.gb-screen` uses `top: 800px` + `bottom: 600px` (so its height auto-follows the section) at `8%` side inset (= Pokédex width). Cards live in a wrapper that **collapses when closed** (`max-height`+opacity, 1500ms) and is `display:contents` on desktop so the fan is untouched; growing it grows the section, and the screen follows. Closed state: `.pkmn-hand.pkmn-closed { min-height }` gives the absolute box a stage; `.pkmn-hand .box3d-wrap` is resized and centred with `left:50%; transform: translate(-50%, …)` (margin:auto left-aligns it because the box is wider than the hand).
+- **Contact** (`Contact.jsx` + `App.jsx`): **flexbox gotcha** — the section has `mx-auto` and sits in a flex-column wrapper, so auto cross-axis margins disabled stretch and it sized to its content (the Earth `<canvas>`), overflowing right. Fix on the wrapper: `[&>section]:w-full [&>section]:min-w-0`. Content is centred on mobile; globe/text use `translate` offsets.
+
+## Gotchas
+
+- **Do not take screenshots on your own** — the user provides them. If you must verify layout, measure bounding boxes numerically (Playwright `evaluate`), not captures.
+- The site **never fires `networkidle`** (continuous 3D) — headless navigation must use `domcontentloaded` + a fixed wait.
+- A global `* { font-family }` (index.css) overrides `Press Start 2P` on leaf text spans — set the pixel font directly on the leaf.
+- There can be two dev servers from the same files (user's on 5173, another on 5174); both HMR.
+
+## Deploy
+
+Live site = **`gh-pages` branch** (built output). To publish:
 
 ```bash
-npm run build   # base defaults to '/', outputs dist/ (+ .br/.gz via vite-plugin-compression)
-
-# Push dist to gh-pages, preserving the two files the build does NOT emit:
-#   - .nojekyll  (empty file)
-#   - 404.html   (an exact copy of index.html — SPA fallback for react-router deep links)
-WT=$(mktemp -d)
-git worktree add "$WT" gh-pages
-git -C "$WT" rm -rf . -q
-cp -R dist/. "$WT"/
-touch "$WT/.nojekyll"
-cp "$WT/index.html" "$WT/404.html"
-git -C "$WT" add -A
-git -C "$WT" commit -m "deploy: <what changed>"
-git -C "$WT" push origin gh-pages
-git worktree remove "$WT" --force
-
-# Verify live (the hash must match the fresh build):
-curl -s https://zackisaza.github.io/index.html | grep -o 'assets/index-[a-z0-9]*\.js'
+npm run deploy   # builds, then pushes dist/ to gh-pages (adds .nojekyll + 404.html = index.html for the SPA fallback), skips if unchanged
 ```
 
-Public assets (`desktop_pc/`, `planet/`, `arcade/`, `food/`, `projects/`, `tech-icons/`, favicons) live in `public/` and Vite copies them into `dist`, so a clean `dist` replace preserves them.
+Or manually / via CI:
+- `.github/workflows/deploy.yml` — manual **workflow_dispatch** (Actions tab → Run workflow); builds + deploys `dist` to this repo's `gh-pages` via the built-in `GITHUB_TOKEN`.
+- Verify live: `curl -s https://zackisaza.github.io/index.html | grep -o 'assets/index-[a-z0-9]*\.js'` must match the fresh build hash.
+
+Public assets (`desktop_pc/`, `planet/`, `arcade/`, `food/`, `projects/`, `tech-icons/`, favicons) live in `public/` and are copied into `dist` by the build.
 
 ## Conventions
 
-- Commits: **Spanish conventional commits** (`feat:`, `fix:`, `chore:`), no AI attribution / no `Co-Authored-By`.
-- Source code (identifiers, comments, UI strings) is in English; Spanish is used for user-facing copy via the translations layer.
+- Commits: **Spanish conventional commits** (`feat:`/`fix:`/`chore:`/`docs:`), no AI attribution / no `Co-Authored-By`.
+- Source (identifiers, comments, UI strings) in **English**; user-facing Spanish copy goes through `translations/index.js`.
