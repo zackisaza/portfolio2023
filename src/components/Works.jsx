@@ -401,29 +401,27 @@ const ProjectCard = ({ index, name, description, highlights, icon, deal, gridRef
 			className={`pkmn-card-slot w-full sm:w-[384px] px-4 sm:px-0 sm:ml-[calc(min(344px,14vw)_-_384px)] sm:first:ml-0 will-change-transform relative${isSelected ? ' is-selected' : ''}`}
 			style={{ '--i': index, perspective: '1000px', x: dx, y: dy, rotate, scale, opacity: dealOpacity, zIndex: index }}>
 			
-			{/* Tap to flip indicator - mobile only */}
-			<motion.div
-				className='absolute -bottom-10 left-1/2 transform -translate-x-1/2 sm:hidden z-20 pointer-events-none'
-				initial={{ opacity: 0, y: -8, scale: 0.98 }}
-				animate={inView ? {
-					opacity: [0, 1, 0.85, 1],
-					y: [0, -6, -3, 0],
-					scale: [1, 1.02, 1],
-				} : { opacity: 0 }}
-				transition={inView ? {
-					duration: 2.2,
-					repeat: Infinity,
-					ease: 'easeInOut',
-				} : { duration: 0.2 }}
-				aria-hidden='true'
-			>
-				<div className='inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 via-purple-500 to-pink-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm/10'>
-					<span className='text-sm leading-none'>👆</span>
-					<span className='leading-tight'>
-						{language === 'es' ? 'Toca para voltear' : 'Tap to flip'}
-					</span>
-				</div>
-			</motion.div>
+			{/* Flip hint — mobile only. Centred on the card, styled like the Game Boy's
+			    in-LCD tutorials (DMG green palette + Press Start 2P pixel font). */}
+			<div className='absolute inset-0 sm:hidden z-20 pointer-events-none flex items-center justify-center'>
+				<motion.span
+					className='gb-flip-hint'
+					initial={{ opacity: 0, scale: 0.96 }}
+					animate={inView ? {
+						opacity: [0, 1, 0.82, 1],
+						y: [0, -4, 0],
+						scale: [1, 1.03, 1],
+					} : { opacity: 0 }}
+					transition={inView ? {
+						duration: 2.2,
+						repeat: Infinity,
+						ease: 'easeInOut',
+					} : { duration: 0.2 }}
+					aria-hidden='true'
+				>
+					{language === 'es' ? 'Toca para voltear' : 'Tap to flip'}
+				</motion.span>
+			</div>
 
 			<div className='pkmn-fan-tilt'>
 			<WrapperComponent {...wrapperProps}>
@@ -802,10 +800,9 @@ const Works = () => {
 	// reduced motion we skip the pack and just show the dealt cards.
 	const [opened, setOpened] = useState(() => {
 		if (typeof window === "undefined") return false;
-		return (
-			window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
-			window.innerWidth < 640
-		);
+		// Mobile now shows the closed booster pack too (tap / A to open); only skip
+		// the pack for reduced-motion users.
+		return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 	});
 	// 0 = cards stacked/hidden inside the pack, 1 = fully dealt into the grid.
 	const openProgress = useMotionValue(opened ? 1 : 0);
@@ -852,23 +849,35 @@ const Works = () => {
 						</motion.p>
 					</div>
 				</div>
-			<div ref={gridRef} className='pkmn-hand relative mt-24 sm:mt-24 md:mt-32 sm:w-screen sm:left-1/2 sm:-translate-x-1/2 sm:scale-[0.8] sm:origin-top flex flex-col sm:flex-row gap-16 sm:gap-0 justify-center items-center sm:items-end'>
-				{servicesShowcase.map((service, index) => {
-					const localized =
-						service.translations[language] ?? service.translations.en;
-					return (
-						<ProjectCard
-							key={service.id}
-							index={index}
-							name={localized.name}
-							description={localized.description}
-							highlights={localized.highlights}
-							icon={service.icon}
-							deal={openProgress}
-							gridRef={gridRef}
-						/>
-					);
-				})}
+			<div ref={gridRef} className={`pkmn-hand relative mt-[166px] sm:mt-24 md:mt-32 sm:w-screen sm:left-1/2 sm:-translate-x-1/2 sm:scale-[0.8] sm:origin-top flex flex-col sm:flex-row gap-16 sm:gap-0 justify-center items-center sm:items-end${!opened ? ' pkmn-closed' : ''}`}>
+				{/* Mobile: the cards collapse while the box is closed and reveal slowly on
+				    open — this grows the section, and the absolute Game Boy screen (top+
+				    bottom) follows it. On desktop the wrapper is display:contents so the
+				    poker-hand fan is unaffected. */}
+				<div
+					className={`flex flex-col gap-16 items-center overflow-hidden transition-[max-height,opacity,transform] duration-[1500ms] ease-out sm:contents ${
+						opened
+							? "max-h-[6000px] opacity-100 translate-y-0"
+							: "max-h-0 opacity-0 -translate-y-4 pointer-events-none"
+					}`}
+				>
+					{servicesShowcase.map((service, index) => {
+						const localized =
+							service.translations[language] ?? service.translations.en;
+						return (
+							<ProjectCard
+								key={service.id}
+								index={index}
+								name={localized.name}
+								description={localized.description}
+								highlights={localized.highlights}
+								icon={service.icon}
+								deal={openProgress}
+								gridRef={gridRef}
+							/>
+						);
+					})}
+				</div>
 
 				<AnimatePresence>
 					{!opened && <BoosterBox3D key='box' onOpen={handleOpen} language={language} />}

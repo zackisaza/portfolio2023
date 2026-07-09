@@ -85,7 +85,7 @@ const App = () => {
 					<SectionSentinel sectionIndex={4} />
 				</div>
 				<ServicesGameProvider total={6}>
-					<div className='relative z-0 pokemon-bg pt-[472px] sm:pt-[536px] pb-60 sm:pb-96' style={{ '--pf-top': '360px' }}>
+					<div className='relative z-0 pokemon-bg pt-[472px] sm:pt-[536px] pb-[640px] sm:pb-96' style={{ '--pf-top': '360px' }}>
 						{/* Stack → Services transition (solid: no reveal, keeps the Game Boy out of the mountains) */}
 						<div
 							className='section-transition'
@@ -116,7 +116,7 @@ const App = () => {
 						<MyCompany />
 						<SectionSentinel sectionIndex={6} />
 					</div>
-					<div className='relative z-0 min-h-screen flex flex-col justify-end translate-y-20'>
+					<div className='relative z-0 min-h-screen flex flex-col justify-end translate-y-20 [&>section]:min-w-0 [&>section]:w-full'>
 						<Contact />
 						<SectionSentinel sectionIndex={7} />
 					</div>

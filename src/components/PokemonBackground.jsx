@@ -38,7 +38,10 @@ const items = sprites.map((url, i) => {
 // section is outside the viewport, so it costs nothing while scrolled away.
 const PokemonBackground = () => {
 	const ref = useRef(null);
+	const swarmRef = useRef(null);
 	const [active, setActive] = useState(false);
+	const [isMobile, setIsMobile] = useState(false);
+	const [rise, setRise] = useState(null);
 	const { language } = useLanguage();
 	const game = useServicesGame();
 
@@ -53,13 +56,45 @@ const PokemonBackground = () => {
 		return () => io.disconnect();
 	}, []);
 
+	// The mobile LCD is a tall, narrow screen — the full 154-sprite swarm reads as
+	// cramped noise there, so thin it to ~1/6 (roster stays full on desktop).
+	useEffect(() => {
+		const mq = window.matchMedia("(max-width: 639px)");
+		const update = () => setIsMobile(mq.matches);
+		update();
+		mq.addEventListener("change", update);
+		return () => mq.removeEventListener("change", update);
+	}, []);
+
+	const swarm = isMobile ? items.filter((_, i) => i % 6 === 0) : items;
+
+	// Measure the (tall) mobile LCD so sprites drift across its FULL height.
+	// Desktop keeps the CSS default (120vh); on mobile we feed the real px height.
+	useEffect(() => {
+		if (!isMobile) {
+			setRise(null);
+			return;
+		}
+		const el = swarmRef.current;
+		if (!el) return;
+		const update = () => setRise(el.clientHeight + 140);
+		update();
+		const ro = new ResizeObserver(update);
+		ro.observe(el);
+		return () => ro.disconnect();
+	}, [isMobile]);
+
 	const tutorial = game?.opened
 		? language === "es"
 			? "◄ ► Cambiar carta    Ⓑ Voltear"
 			: "◄ ► Change card    Ⓑ Flip"
-		: language === "es"
-			? "Presiona Ⓐ para abrir la caja"
-			: "Press Ⓐ to open the box";
+		: isMobile
+			? language === "es"
+				? "Toca la caja para abrirla"
+				: "Tap the box to open it"
+			: language === "es"
+				? "Presiona Ⓐ para abrir la caja"
+				: "Press Ⓐ to open the box";
 
 	// D-pad: left half → previous card, right half → next card, and rock the
 	// cross toward the pressed side.
@@ -86,13 +121,17 @@ const PokemonBackground = () => {
 					<span className='gb-screen-label'>DOT MATRIX WITH STEREO SOUND</span>
 				</div>
 				<div className='gb-lcd'>
-					<div className='pokemon-swarm'>
-						{items.map(({ url, style }) => (
+					<div
+						className='pokemon-swarm'
+						ref={swarmRef}
+						style={rise ? { "--rise": `${rise}px` } : undefined}
+					>
+						{swarm.map(({ url, style }) => (
 							<span key={url} style={style} />
 						))}
 					</div>
 					{/* In-game style tutorial hint */}
-					<div className='gb-tutorial'>{tutorial}</div>
+					<div className={`gb-tutorial${game?.opened ? "" : " gb-tutorial--cta"}`}>{tutorial}</div>
 				</div>
 			</div>
 			{/* GAME BOY wordmark below the screen */}
