@@ -140,43 +140,87 @@ const iconMap = {
 	),
 };
 
-const ServiceCard = ({ index, title, description, icon }) =>
-{
-  return (
-			<Tilt
-				className='w-full xs:w-[300px] sm:w-[250px]'
-			options={{
-				max: 45,
-				scale: 1,
-				speed: 450,
-			}}>
+// Terminal filename per skill, shown in each card's window title bar.
+const FILES = {
+	mastery: "mastery.sh",
+	system: "system.cfg",
+	devops: "devops.yml",
+	leadership: "leadership.md",
+};
+
+// Each skill is rendered as a little code-editor / terminal window: traffic-light
+// dots + filename, an icon "screen" with CRT scanlines, a `>` prompt title, and a
+// status bar. The window chrome makes the card read clearly against the black bg.
+const ServiceCard = ({ index, total, title, description, icon }) => {
+	const file = FILES[icon] ?? `${icon}.sys`;
+	const id = String(index + 1).padStart(2, "0");
+	return (
+		<Tilt
+			className='w-full xs:w-[300px] sm:w-[290px]'
+			options={{ max: 8, scale: 1.02, speed: 500 }}>
 			<motion.div
-				variants={fadeIn("right", "spring", 0.5 * index, 0.75)}
-				className='w-full bg-gradient-to-r from-[#45070e] via-[#6a0e1c] to-[#45070e] p-[1px] rounded-[20px] shadow-card'
-				animate={{ y: [0, -10, 0], rotate: [-1.2, 0.8, -1.2], scale: [1, 1.03, 1] }}
+				variants={fadeIn("up", "spring", 0.3 * index, 0.75)}
+				className='group relative w-full overflow-hidden rounded-xl border border-[#8b1120]/40 bg-[#0b0709] shadow-[0_18px_48px_rgba(139,17,32,0.22)] transition-colors duration-300 hover:border-[#e0495c]/70'
+				animate={{ y: [0, -8, 0] }}
 				transition={{
-					duration: 3.6,
+					duration: 4,
 					repeat: Infinity,
 					repeatType: "reverse",
 					ease: "easeInOut",
-					delay: (index % 4) * 0.35,
-					repeatDelay: 0.1,
+					delay: (index % 4) * 0.4,
 				}}>
-				<div className='bg-[#1a0000] rounded-[20px] py-6 px-8 min-h-[280px] flex flex-col justify-between gap-6'>
-					<div className='flex flex-col items-center gap-4 text-center'>
-						{iconMap[icon]?.("w-16 h-16 drop-shadow-[0_8px_18px_rgba(0,0,0,0.25)]")}
-						<h3 className='text-white-200 text-[18px] font-semibold leading-snug'>
-							{title}
-						</h3>
+				{/* Phosphor accent line */}
+				<span className='block h-[2px] w-full bg-gradient-to-r from-transparent via-[#e0495c] to-transparent opacity-70' />
+
+				{/* Window title bar */}
+				<div className='flex items-center gap-2 border-b border-white/[0.06] bg-white/[0.02] px-4 py-2.5'>
+					<span className='h-2.5 w-2.5 rounded-full bg-[#ff5f56]' />
+					<span className='h-2.5 w-2.5 rounded-full bg-[#ffbd2e]' />
+					<span className='h-2.5 w-2.5 rounded-full bg-[#27c93f]' />
+					<span className='ml-2 truncate text-[11px] tracking-wide text-white/45'>
+						~/skills/{file}
+					</span>
+				</div>
+
+				{/* Body — icon "screen" with CRT scanlines + prompt title */}
+				<div className='relative flex min-h-[250px] flex-col items-center gap-5 px-7 py-7 text-center'>
+					<span
+						aria-hidden='true'
+						className='pointer-events-none absolute inset-0'
+						style={{
+							backgroundImage:
+								"repeating-linear-gradient(0deg, rgba(255,255,255,0.5) 0px, rgba(255,255,255,0.5) 1px, transparent 1px, transparent 3px)",
+							opacity: 0.05,
+						}}
+					/>
+					<div className='relative rounded-2xl bg-white/[0.03] p-3 ring-1 ring-white/10'>
+						{iconMap[icon]?.("w-14 h-14 drop-shadow-[0_6px_16px_rgba(0,0,0,0.4)]")}
 					</div>
-					<p className='text-secondary text-base md:text-sm leading-relaxed text-center'>
+					<h3 className='text-[17px] font-semibold text-white-200'>
+						<span className='text-[#e0495c]'>{">"}</span> {title}
+					</h3>
+					<p className='text-secondary text-sm leading-relaxed'>
 						<Typewriter content={description} speed={20} startDelay={140} cursor={false} />
 					</p>
+				</div>
+
+				{/* Status bar */}
+				<div className='flex items-center justify-between border-t border-white/[0.06] px-4 py-2 text-[10px] tracking-wider text-white/40'>
+					<span className='flex items-center gap-1.5'>
+						<span
+							className='h-1.5 w-1.5 rounded-full bg-[#27c93f]'
+							style={{ boxShadow: "0 0 6px #27c93f" }}
+						/>
+						ONLINE
+					</span>
+					<span>
+						{id} / {String(total ?? 4).padStart(2, "0")}
+					</span>
 				</div>
 			</motion.div>
 		</Tilt>
 	);
-}
+};
 
 const About = () => {
 	const { t, language } = useLanguage();
@@ -216,11 +260,12 @@ const About = () => {
 								>
 									<Typewriter rich content={t("about.description")} speed={22} startDelay={180} />
 								</motion.p>
-			<div className='mt-20 flex flex-wrap gap-10 justify-center px-4 sm:px-0'>
+			<div className='mt-20 flex flex-wrap xl:flex-nowrap gap-10 xl:gap-8 justify-center px-4 sm:px-0'>
 				{services.map((service, index) => (
 					<ServiceCard
 						key={service.id}
 						index={index}
+						total={services.length}
 						title={service.title[language] ?? service.title.en}
 						description={
 							service.description[language] ?? service.description.en
@@ -233,4 +278,4 @@ const About = () => {
 	);
 }
 
-export default SectionWrapper(About, 'about')
+export default SectionWrapper(About, 'about', "max-w-7xl xl:max-w-[1440px]")
