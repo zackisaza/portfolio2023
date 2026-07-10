@@ -213,7 +213,7 @@
 	align-items: center;
 	justify-content: center;
 	font-size: calc(5.5 * var(--u));
-	font-family: 'Inter', sans-serif;
+	font-family: "Space Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 	color: #fff;
 	text-shadow: calc(0.15 * var(--u)) calc(0.15 * var(--u)) calc(0.1 * var(--u)) var(--shadow);
 	background-image:
@@ -360,7 +360,7 @@
 	padding: calc(1.3 * var(--u)) calc(1.6 * var(--u));
 	overflow: hidden;
 	color: #eaf6ff;
-	font-family: 'Inter', system-ui, sans-serif;
+	font-family: "Space Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 /* Reset the cabinet's global absolute/width rule for CRT content */

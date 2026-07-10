@@ -82,7 +82,7 @@
 }
 
 .cell-head b {
-	font-family: 'Inter', system-ui, sans-serif;
+	font-family: "Space Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 	font-weight: 800;
 	font-size: clamp(14px, 1.5vw, 18px);
 	color: #fff;
