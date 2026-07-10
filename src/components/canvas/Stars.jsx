@@ -3,14 +3,13 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { Points, PointMaterial, Preload, AdaptiveDpr } from "@react-three/drei";
 import * as random from "maath/random/dist/maath-random.esm";
 import { MathUtils } from "three";
-import { useCanvasBudget } from "../../context/CanvasBudgetContext";
 
 const Stars = ({ visible = true, ...props }) => {
 	const ref = useRef();
 	const groupRef = useRef();
 	const materialRef = useRef();
-	// Fade-in / fade-out con opacidad del material
-	const FADE_SPEED = 3; // mayor = más rápido
+	// Fade in/out driven by the material's opacity.
+	const FADE_SPEED = 3; // higher = faster
 	const isSmall = typeof window !== 'undefined' && window.innerWidth < 640;
 	const count = isSmall ? 1200 : 2800;
 	const [sphere] = useState(() =>
@@ -22,23 +21,23 @@ const Stars = ({ visible = true, ...props }) => {
 			ref.current.rotation.x -= delta / 10;
 			ref.current.rotation.y -= delta / 15;
 		}
-		// Fade de opacidad hacia el objetivo según visibilidad
+		// Ease the opacity toward its target based on visibility.
 		if (materialRef.current) {
 			const target = visible ? 1 : 0;
 			const current = materialRef.current.opacity ?? 0;
-			// Lerp amortiguado dependiente de delta
+			// Delta-dependent damped lerp (frame-rate independent).
 			const k = 1 - Math.pow(0.0001, delta * FADE_SPEED);
 			materialRef.current.opacity = MathUtils.lerp(current, target, k);
 		}
 	});
 
-	// Estado inicial
+	// Initial state.
 	useEffect(() => {
 		if (groupRef.current) {
 			groupRef.current.position.y = 0;
 		}
 		if (materialRef.current) {
-			materialRef.current.opacity = 0; // empezar invisible; aparecerá si visible=true
+			materialRef.current.opacity = 0; // start invisible; fades in when visible=true
 		}
 	}, []);
 
@@ -64,14 +63,8 @@ const Stars = ({ visible = true, ...props }) => {
 	);
 };
 
-const StarsCanvas = ({ sectionIndex = 0 }) => {
-	const { suspendAboveOf } = useCanvasBudget();
-	// Do NOT suspend stars based on exclusiveSection anymore; keep them across sections
-	const suspendedByExclusive = false;
-	const suspendedByAbove = suspendAboveOf !== null && sectionIndex < suspendAboveOf;
-	const suspended = suspendedByExclusive || suspendedByAbove;
-
-	// Intersección del viewport y control de montaje/desmontaje
+const StarsCanvas = () => {
+	// Viewport intersection + mount/unmount control.
 	const [isIntersecting, setIsIntersecting] = useState(false);
 	const [visibleLocal, setVisibleLocal] = useState(false);
 	const [shouldRender, setShouldRender] = useState(false);
@@ -83,7 +76,7 @@ const StarsCanvas = ({ sectionIndex = 0 }) => {
 	useEffect(() => {
 		return () => {
 			if (cleanupRef.current) {
-				try { cleanupRef.current(); } catch (e) {}
+				try { cleanupRef.current(); } catch (e) { /* non-critical: ignore */ }
 			}
 		};
 	}, []);
@@ -102,28 +95,21 @@ const StarsCanvas = ({ sectionIndex = 0 }) => {
 	}, []);
 
 	useEffect(() => {
-		// Si está suspendido globalmente, desmontar inmediatamente
-		if (suspended) {
-			setVisibleLocal(false);
-			setShouldRender(false);
-			return;
-		}
-
 		if (isIntersecting) {
-			// Montar Canvas y activar visibilidad con un leve delay
+			// Mount the Canvas and turn visibility on after a slight delay.
 			setShouldRender(true);
 			clearTimeout(timeoutRef.current);
 			timeoutRef.current = setTimeout(() => setVisibleLocal(true), 50);
 		} else {
-			// Ocultar (fade-out) y desmontar para liberar recursos
+			// Fade out, then unmount to release GPU resources.
 			setVisibleLocal(false);
 			clearTimeout(timeoutRef.current);
-			// Dar tiempo al fade-out antes de desmontar el Canvas
+			// Give the fade-out time to finish before unmounting the Canvas.
 			timeoutRef.current = setTimeout(() => setShouldRender(false), 650);
 		}
 
 		return () => clearTimeout(timeoutRef.current);
-	}, [isIntersecting, suspended]);
+	}, [isIntersecting]);
 
 	return (
 		<div ref={containerRef} className='w-full h-auto absolute inset-0 z-[-1] pointer-events-none'>
@@ -138,7 +124,7 @@ const StarsCanvas = ({ sectionIndex = 0 }) => {
 							canvasElRef.current = canvas;
 
 							const onLost = (e) => {
-								try { e.preventDefault(); } catch (err) {}
+								try { e.preventDefault(); } catch (err) { /* non-critical: ignore */ }
 								console.warn('WebGL context lost (handled)');
 							};
 
@@ -153,12 +139,12 @@ const StarsCanvas = ({ sectionIndex = 0 }) => {
 								try {
 									canvas.removeEventListener('webglcontextlost', onLost);
 									canvas.removeEventListener('webglcontextrestored', onRestore);
-								} catch (err) {}
+								} catch (err) { /* non-critical: ignore */ }
 								try {
 									if (renderer && typeof renderer.dispose === 'function') renderer.dispose();
-								} catch (err) {}
+								} catch (err) { /* non-critical: ignore */ }
 							};
-						} catch (err) {}
+						} catch (err) { /* non-critical: ignore */ }
 					}}
 					gl={{ powerPreference: 'high-performance', antialias: false }}
 				>

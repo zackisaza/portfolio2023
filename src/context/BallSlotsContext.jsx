@@ -33,6 +33,8 @@ export const BallSlotsProvider = ({ maxSlots = 6, children }) => {
 
   const value = useMemo(
     () => ({ maxSlots, requestSlot, releaseSlot, hasSlot }),
+    // The slot callbacks are stable for the provider's life; memoize on maxSlots.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [maxSlots]
   );
 

@@ -376,7 +376,7 @@ const BallCanvas = ({ icon, externalDeltaRef = null, decalRotation, decalScale, 
 
 					const onLost = (e) => {
 						// prevent default to avoid browser's default handling
-						try { e.preventDefault(); } catch (err) {}
+						try { e.preventDefault(); } catch (err) { /* non-critical: ignore */ }
 						// log a single handled message so it doesn't spam
 						console.warn('WebGL context lost (handled)');
 					};
@@ -392,11 +392,11 @@ const BallCanvas = ({ icon, externalDeltaRef = null, decalRotation, decalScale, 
 						try {
 							canvas.removeEventListener('webglcontextlost', onLost);
 							canvas.removeEventListener('webglcontextrestored', onRestore);
-						} catch (err) {}
+						} catch (err) { /* non-critical: ignore */ }
 						try {
 							// attempt a safe dispose of renderer resources
 							if (renderer && typeof renderer.dispose === 'function') renderer.dispose();
-						} catch (err) {}
+						} catch (err) { /* non-critical: ignore */ }
 					};
 				} catch (err) {
 					// ignore onCreated errors

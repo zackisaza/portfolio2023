@@ -14,28 +14,27 @@ import {
 	ScrollToTop,
 } from "./components";
 import SideNavbar from "./components/SideNavbar";
-import SectionSentinel from "./components/SectionSentinel";
 import PokemonBackground from "./components/PokemonBackground";
-import { CanvasBudgetProvider } from "./context/CanvasBudgetContext";
 import { ServicesGameProvider } from "./context/ServicesGameContext";
-import herobg from "./assets/herobg.png";
+// Binary (pure black/white) silhouette of the hero landscape, used ONLY as a
+// luminance mask for the section transitions. Thresholded so the sky is fully
+// opaque and the mountains fully transparent (the source photo's sky is ~L242,
+// which left the fill ~95% opaque and let the background bleed through).
+import sectionMask from "./assets/herobg-mask.png";
 
 const App = () => {
 	return (
 		<BrowserRouter>
-			<CanvasBudgetProvider>
 			<div className='relative z-0 bg-primary w-full max-w-full overflow-x-hidden'>
 				<div className='relative z-0 bg-hero-pattern bg-cover bg-no-repeat bg-center'>
 					<Navbar />
 					<SideNavbar />
 					<Hero />
-					<SectionSentinel sectionIndex={0} />
-					<StarsCanvas key="hero-stars" sectionIndex={0} />
+					<StarsCanvas key="hero-stars" />
 				</div>
 				<div className='relative z-0 pb-28 md:pb-44'>
 					<About />
-					<SectionSentinel sectionIndex={1} />
-					<StarsCanvas key="about-stars" sectionIndex={1} />
+					<StarsCanvas key="about-stars" />
 				</div>
 				<div className='relative z-0 arcade-bg pt-[360px]'>
 					{/* About → Projects transition: hero mountain silhouette as a
@@ -49,7 +48,7 @@ const App = () => {
 						aria-hidden='true'
 						style={{
 							'--tr-from': '#000000',
-							'--tr-mask': `url(${herobg})`,
+							'--tr-mask': `url(${sectionMask})`,
 						}}
 					/>
 					<div className='arcade-fx' aria-hidden='true'>
@@ -61,28 +60,26 @@ const App = () => {
 						<span style={{ "--x": "88%", "--s": "60px", "--c": "#ffe08a", "--d": "5s", "--dur": "16s" }} />
 						<span style={{ "--x": "48%", "--s": "44px", "--c": "#ffffff", "--d": "10s", "--dur": "19s" }} />
 					</div>
-					<Projects />
-					<SectionSentinel sectionIndex={2} />
+					<div className='arcade-bottom-fade' aria-hidden='true' />
+						<Projects />
 				</div>
 				<div className='relative z-0 bg-[#e9edf1] pt-[360px]'>
 					{/* Projects → Experience transition */}
 					<div
 						className='section-transition'
 						aria-hidden='true'
-						style={{ '--tr-from': '#ff8f45', '--tr-mask': `url(${herobg})` }}
+						style={{ '--tr-from': '#ff8f45', '--tr-mask': `url(${sectionMask})` }}
 					/>
 					<Experience />
-					<SectionSentinel sectionIndex={3} />
 				</div>
 				<div className='relative z-0 bg-[#DEB887] pt-[360px]'>
 					{/* Experience → Stack transition */}
 					<div
 						className='section-transition'
 						aria-hidden='true'
-						style={{ '--tr-from': '#e9edf1', '--tr-mask': `url(${herobg})` }}
+						style={{ '--tr-from': '#e9edf1', '--tr-mask': `url(${sectionMask})` }}
 					/>
 					<Tech />
-					<SectionSentinel sectionIndex={4} />
 				</div>
 				<ServicesGameProvider total={6}>
 					<div className='relative z-0 pokemon-bg pt-[472px] sm:pt-[536px] pb-[640px] sm:pb-96' style={{ '--pf-top': '360px' }}>
@@ -90,13 +87,12 @@ const App = () => {
 						<div
 							className='section-transition'
 							aria-hidden='true'
-							style={{ '--tr-from': '#DEB887', '--tr-to': '#d9dac4', '--tr-mask': `url(${herobg})` }}
+							style={{ '--tr-from': '#DEB887', '--tr-to': '#d9dac4', '--tr-mask': `url(${sectionMask})` }}
 						/>
 						<PokemonBackground />
 						<div className='relative z-10'>
 							<Works />
 						</div>
-						<SectionSentinel sectionIndex={5} />
 					</div>
 				</ServicesGameProvider>
 				<div className='relative z-0 overflow-hidden'>
@@ -105,27 +101,24 @@ const App = () => {
 						<div className='absolute inset-x-0 top-0 h-screen bg-hero-pattern bg-cover bg-no-repeat bg-center -scale-y-100' />
 					</div>
 					{/* Single shared starfield spanning Startup + Contact (visible over dark areas, invisible over the white) */}
-					<StarsCanvas key="bottom-stars" sectionIndex={6} />
+					<StarsCanvas key="bottom-stars" />
 					<div className='relative z-0 pt-[360px]'>
 						{/* Services → Startup transition (solid black mountains, sky compensated to render as #B1B29B) */}
 						<div
 							className='section-transition'
 							aria-hidden='true'
-							style={{ '--tr-from': '#BABBA3', '--tr-to': '#000000', '--tr-mask': `url(${herobg})` }}
+							style={{ '--tr-from': '#BABBA3', '--tr-to': '#000000', '--tr-mask': `url(${sectionMask})` }}
 						/>
 						<MyCompany />
-						<SectionSentinel sectionIndex={6} />
 					</div>
 					<div className='relative z-0 min-h-screen flex flex-col justify-end translate-y-20 [&>section]:min-w-0 [&>section]:w-full'>
 						<Contact />
-						<SectionSentinel sectionIndex={7} />
 					</div>
 					<div aria-hidden='true' className='h-[22vh]' />
 				</div>
 				<Footer />
 				<ScrollToTop />
 			</div>
-			</CanvasBudgetProvider>
 		</BrowserRouter>
 	);
 };

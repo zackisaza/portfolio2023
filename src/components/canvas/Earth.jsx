@@ -2,31 +2,37 @@ import { Suspense, useState, useEffect, useRef } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, useGLTF, AdaptiveDpr, Float } from '@react-three/drei';
 import CanvasLoader from '../Loader'
-import { useCanvasBudget } from "../../context/CanvasBudgetContext";
+
+// Fixed placement + entrance timing (module scope so they aren't React deps).
+const baseScale = 2.72; // 20% smaller than the original 3.4
+const posY = -0.7; // centered; fits fully thanks to the pulled-back camera
+const GROW_DURATION = 1.1; // seconds — entrance grow-in duration
 
 const Earth = ({ visible = true }) => {
-
 	const earth = useGLTF('./planet/scene.gltf')
 	const groupRef = useRef(null);
-	const baseScale = 3.4;
-	// Centered. The planet fits fully thanks to the pulled-back camera below.
-	const posY = -0.7;
+	// Entrance grow-in: captured on the first rendered frame so the planet scales
+	// up from nothing regardless of when the canvas mounts into view.
+	const startRef = useRef(null);
 
 	useFrame(({ clock }) => {
 		const group = groupRef.current;
 		if (!group) return;
-		// No entrance animation: the planet is always at full scale and a fixed
-		// position. Only ambient motion below (slow spin + Float bobbing).
-		group.scale.setScalar(baseScale);
-		group.position.y = posY;
 		const t = clock.getElapsedTime();
+		if (startRef.current === null) startRef.current = t;
+		// Ease-out grow from 0 → full scale as the planet appears.
+		const p = Math.min(1, (t - startRef.current) / GROW_DURATION);
+		const eased = 1 - Math.pow(1 - p, 3);
+		group.scale.setScalar(baseScale * eased);
+		group.position.y = posY;
 		group.rotation.y = t * 0.12; // slow ambient spin
 	});
 
 	useEffect(() => {
 		if (groupRef.current) {
 			groupRef.current.position.set(0, posY, 0);
-			groupRef.current.scale.setScalar(baseScale);
+			// Start collapsed so the grow-in animation has somewhere to grow from.
+			groupRef.current.scale.setScalar(0);
 		}
 	}, []);
 
@@ -43,15 +49,11 @@ const Earth = ({ visible = true }) => {
 		</Float>
 	);
 }
-const EarthCanvas = ({ sectionIndex = 6 }) => {
+const EarthCanvas = () => {
 	const [isVisible, setIsVisible] = useState(false);
 	const canvasRef = useRef(null);
 	const canvasElRef = useRef(null);
 	const cleanupRef = useRef(null);
-	const { suspendAboveOf, exclusiveSection } = useCanvasBudget();
-	const suspendedByExclusive = exclusiveSection !== null && sectionIndex !== exclusiveSection;
-	const suspendedByAbove = suspendAboveOf !== null && sectionIndex < suspendAboveOf;
-	const suspended = suspendedByExclusive || suspendedByAbove;
 
 	useEffect(() => {
 		const observer = new IntersectionObserver(
@@ -61,23 +63,20 @@ const EarthCanvas = ({ sectionIndex = 6 }) => {
 			{ threshold: 0.1 }
 		);
 
-		if (canvasRef.current) {
-			observer.observe(canvasRef.current);
+		const node = canvasRef.current;
+		if (node) {
+			observer.observe(node);
 		}
 
 		return () => {
-			if (canvasRef.current) {
-				observer.unobserve(canvasRef.current);
+			if (node) {
+				observer.unobserve(node);
 			}
 			if (cleanupRef.current) {
-				try { cleanupRef.current(); } catch (e) {}
+				try { cleanupRef.current(); } catch (e) { /* non-critical: ignore */ }
 			}
 		};
 	}, []);
-
-	if (suspended) {
-		return <div style={{ width: '100%', height: '100%' }} />
-	}
 
 	return (
 		<div ref={canvasRef} style={{ width: '100%', height: '100%' }}>
@@ -93,7 +92,7 @@ const EarthCanvas = ({ sectionIndex = 6 }) => {
 							canvasElRef.current = canvas;
 
 							const onLost = (e) => {
-								try { e.preventDefault(); } catch (err) {}
+								try { e.preventDefault(); } catch (err) { /* non-critical: ignore */ }
 								console.warn('WebGL context lost (handled)');
 							};
 
@@ -108,12 +107,12 @@ const EarthCanvas = ({ sectionIndex = 6 }) => {
 								try {
 									canvas.removeEventListener('webglcontextlost', onLost);
 									canvas.removeEventListener('webglcontextrestored', onRestore);
-								} catch (err) {}
+								} catch (err) { /* non-critical: ignore */ }
 								try {
 									if (renderer && typeof renderer.dispose === 'function') renderer.dispose();
-								} catch (err) {}
+								} catch (err) { /* non-critical: ignore */ }
 							};
-						} catch (err) {}
+						} catch (err) { /* non-critical: ignore */ }
 					}}
 					gl={{ preserveDrawingBuffer: false, antialias: false, powerPreference: 'high-performance' }}
 					camera={{

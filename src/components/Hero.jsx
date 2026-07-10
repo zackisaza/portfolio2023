@@ -179,10 +179,10 @@ const Hero = () => {
 			</div>
 			<div className='absolute inset-0 z-0 pointer-events-auto top-40 sm:top-44 md:top-0' style={{ touchAction: 'pan-y' }}>
 				<Suspense fallback={null}>
-					<ComputersCanvasLazy active={heroInView} sectionIndex={0} />
+					<ComputersCanvasLazy active={heroInView} />
 				</Suspense>
 			</div>
-			<div className='absolute xs:botton-10 bottom-32 w-full flex justify-center items-center hover:scale-90 duration-200 z-20'>
+			<div className='absolute xs:bottom-10 bottom-32 w-full flex justify-center items-center hover:scale-90 duration-200 z-20'>
 				<a href='#about'>
 					<div className='mt-10 w-[35px] h-[54px] rounded-3xl border-4 border-tertiary flex justify-center items-start p-2'>
 						<motion.div

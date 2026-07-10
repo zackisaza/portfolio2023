@@ -4,7 +4,6 @@ import * as THREE from 'three';
 import { OrbitControls, Preload, useGLTF, AdaptiveDpr } from "@react-three/drei";
 
 import CanvasLoader from "../Loader";
-import { useCanvasBudget } from "../../context/CanvasBudgetContext";
 
 const Computers = ({ isMobile, visible = true, isInteractingRef = null }) => {
 	const computer = useGLTF("./desktop_pc/scene.gltf");
@@ -24,18 +23,18 @@ const Computers = ({ isMobile, visible = true, isInteractingRef = null }) => {
 		}
 		const sensitivity = 0.004; // tweak to taste
 		rotVel.current += -mx * sensitivity;
-		try { e.stopPropagation(); } catch (err) {}
+		try { e.stopPropagation(); } catch (err) { /* non-critical: ignore */ }
 	};
 
 	const handlePointerOver = (e) => {
 		if (!isMobile) return;
 		lastPos.current.x = e.clientX ?? e.nativeEvent?.clientX ?? lastPos.current.x;
-		try { e.stopPropagation(); } catch (err) {}
+		try { e.stopPropagation(); } catch (err) { /* non-critical: ignore */ }
 	};
 
 	const handlePointerOut = (e) => {
 		if (!isMobile) return;
-		try { e.stopPropagation(); } catch (err) {}
+		try { e.stopPropagation(); } catch (err) { /* non-critical: ignore */ }
 	};
 
 	// Ensure the initial transform on mount matches the intended layout for
@@ -55,7 +54,7 @@ const Computers = ({ isMobile, visible = true, isInteractingRef = null }) => {
 				computerGroup.current.rotation.set(0.02, -0.8, 0);
 				computerGroup.current.scale.set(0.6, 0.6, 0.6);
 			}
-		} catch (err) {}
+		} catch (err) { /* non-critical: ignore */ }
 	}, [isMobile, computer]);
 
 	useFrame(({ clock }) => {
@@ -94,7 +93,7 @@ const Computers = ({ isMobile, visible = true, isInteractingRef = null }) => {
 				rotVel.current *= 0.92;
 				if (Math.abs(rotVel.current) < 1e-5) rotVel.current = 0;
 			}
-		} catch (err) {}
+		} catch (err) { /* non-critical: ignore */ }
 	});
 
 	return (
@@ -137,8 +136,7 @@ const Computers = ({ isMobile, visible = true, isInteractingRef = null }) => {
 	);
 };
 
-const ComputersCanvas = ({ active = true, sectionIndex = 0 }) => {
-	const { suspendAboveOf, exclusiveSection } = useCanvasBudget();
+const ComputersCanvas = ({ active = true }) => {
 	const canvasElRef = useRef(null);
 	const cleanupRef = useRef(null);
 	const controlsRef = useRef();
@@ -148,7 +146,6 @@ const ComputersCanvas = ({ active = true, sectionIndex = 0 }) => {
 	const ControlsHandler = ({ controlsRef, isInteractingRef }) => {
 		const { camera } = useThree();
 		const rafRef = useRef(null);
-		const animRef = useRef(null);
 
 		useEffect(() => {
 			let controls = controlsRef.current;
@@ -213,6 +210,9 @@ const ComputersCanvas = ({ active = true, sectionIndex = 0 }) => {
 				controls.removeEventListener('end', onEnd);
 				if (rafRef.current) cancelAnimationFrame(rafRef.current);
 			};
+			// Captures the initial camera pose once to animate back to; re-running on
+			// camera.position changes would fight the live drag. Intentionally run-once.
+			// eslint-disable-next-line react-hooks/exhaustive-deps
 		}, [controlsRef, isInteractingRef]);
 		return null;
 	};
@@ -222,7 +222,7 @@ const ComputersCanvas = ({ active = true, sectionIndex = 0 }) => {
 			if (cleanupRef.current) {
 				try {
 					cleanupRef.current();
-				} catch (e) {}
+				} catch (e) { /* non-critical: ignore */ }
 			}
 		};
 	}, []);
@@ -244,20 +244,16 @@ const ComputersCanvas = ({ active = true, sectionIndex = 0 }) => {
 		};
 	}, []);
 
-	const suspendedByExclusive = exclusiveSection !== null && sectionIndex !== exclusiveSection;
-	const suspendedByAbove = suspendAboveOf !== null && sectionIndex < suspendAboveOf;
-	const suspended = suspendedByExclusive || suspendedByAbove;
-
 	// Manage mount/visibility so we can animate exit before unmounting
-	const [shouldRender, setShouldRender] = useState(!suspended && active);
-	const [visibleLocal, setVisibleLocal] = useState(!suspended && active);
+	const [shouldRender, setShouldRender] = useState(active);
+	const [visibleLocal, setVisibleLocal] = useState(active);
 
 	// Keep a ref for timers to clean up
 	const timeoutRef = useRef();
 
 	useEffect(() => {
-		// If we need to hide (suspended or inactive), animate out then unmount
-		if (suspended || !active) {
+		// If we need to hide (inactive), animate out then unmount
+		if (!active) {
 			if (shouldRender) {
 				setVisibleLocal(false);
 				clearTimeout(timeoutRef.current);
@@ -277,7 +273,7 @@ const ComputersCanvas = ({ active = true, sectionIndex = 0 }) => {
 		}
 
 		return () => clearTimeout(timeoutRef.current);
-	}, [suspended, active, shouldRender]);
+	}, [active, shouldRender]);
 
 	if (!shouldRender) {
 		return <div className='w-full h-full bg-transparent' />;
@@ -296,7 +292,7 @@ const ComputersCanvas = ({ active = true, sectionIndex = 0 }) => {
 					canvasElRef.current = canvas;
 
 					const onLost = (e) => {
-						try { e.preventDefault(); } catch (err) {}
+						try { e.preventDefault(); } catch (err) { /* non-critical: ignore */ }
 						console.warn('WebGL context lost (handled)');
 					};
 
@@ -308,7 +304,7 @@ const ComputersCanvas = ({ active = true, sectionIndex = 0 }) => {
 					try {
 						canvas.style.touchAction = 'pan-y pinch-zoom';
 						canvas.setAttribute('touch-action', 'pan-y pinch-zoom');
-					} catch (err) {}
+					} catch (err) { /* non-critical: ignore */ }
 
 					canvas.addEventListener('webglcontextlost', onLost, false);
 					canvas.addEventListener('webglcontextrestored', onRestore, false);
@@ -317,12 +313,12 @@ const ComputersCanvas = ({ active = true, sectionIndex = 0 }) => {
 						try {
 							canvas.removeEventListener('webglcontextlost', onLost);
 							canvas.removeEventListener('webglcontextrestored', onRestore);
-						} catch (err) {}
+						} catch (err) { /* non-critical: ignore */ }
 						try {
 							if (renderer && typeof renderer.dispose === 'function') renderer.dispose();
-						} catch (err) {}
+						} catch (err) { /* non-critical: ignore */ }
 					};
-				} catch (err) {}
+				} catch (err) { /* non-critical: ignore */ }
 			}}
 			camera={
 				isMobile

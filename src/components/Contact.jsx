@@ -89,7 +89,7 @@ const Contact = () => {
 
 			<div className='xl:flex-1 -translate-y-[96px] xl:-translate-y-16 w-full min-w-0 max-w-full overflow-hidden h-[440px] sm:h-[540px] md:h-[620px] xl:h-[660px]'>
 				<Suspense fallback={null}>
-					<EarthCanvasLazy sectionIndex={6} />
+					<EarthCanvasLazy />
 				</Suspense>
 			</div>
 		</div>

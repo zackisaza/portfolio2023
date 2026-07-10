@@ -49,7 +49,6 @@ import typeFire from "./tipospokemon/fuego.png";
 import typeWater from "./tipospokemon/agua.png";
 import typeFairy from "./tipospokemon/hada.png";
 import typeDark from "./tipospokemon/siniestro.png";
-import typeEnergy from "./tipospokemon/energy.png";
 
 export {
   logo,
@@ -93,6 +92,5 @@ export {
   typeFire,
   typeWater,
   typeFairy,
-  typeDark,
-  typeEnergy
+  typeDark
 };

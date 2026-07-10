@@ -7,7 +7,7 @@ import { fadeIn, textVariant } from "../utils/motion";
 import { SectionWrapper } from "../hoc";
 import Typewriter from "./Typewriter";
 import { useLanguage } from "../context/LanguageContext";
-import { typeGrass, typeElectric, typeFire } from "../assets";
+import { typeElectric } from "../assets";
 
 const iconMap = {
 	mastery: (className = "") => (
