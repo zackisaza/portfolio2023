@@ -8,8 +8,14 @@
 .pokemon-bg {
 	position: relative;
 	overflow: hidden;
-	/* Classic Game Boy (DMG) body: light greige plastic with soft side shading. */
+	/* Classic Game Boy (DMG) body: light greige plastic with soft side shading.
+	   The first two layers melt the top & bottom edges to the flat colours where
+	   the neighbouring mountain transitions make contact (top → the Stack→Services
+	   mountains #d9dac4, bottom → the Services→Startup sky #babba3), so the body
+	   doesn't hard-clip into them — same idea as Projects' bottom fade. */
 	background:
+		linear-gradient(to bottom, #d9dac4 340px, rgba(217, 218, 196, 0) 600px) top / 100% 600px no-repeat,
+		linear-gradient(to top, #babba3, rgba(186, 187, 163, 0)) bottom / 100% clamp(180px, 24vh, 360px) no-repeat,
 		radial-gradient(140% 100% at 50% 0%, rgba(255, 255, 255, 0.35), transparent 55%),
 		linear-gradient(165deg, #d9dac4 0%, #c3c4ac 48%, #a8aa93 100%);
 }

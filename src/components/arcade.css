@@ -68,6 +68,21 @@
 	animation: arcade-float var(--dur) linear var(--d) infinite;
 }
 
+/* Soft fade of the animated backdrop (sunburst rays + orbs) to flat #ff8f45 at
+   the very bottom, so they melt into the section edge instead of hard-clipping
+   there. The counterpart of the mountain transition that masks the top; sits
+   above the fx layers (z-0) but below the cabinet content (z-10). */
+.arcade-bottom-fade {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: clamp(150px, 22vh, 300px);
+	background: linear-gradient(to bottom, rgba(255, 143, 69, 0) 0%, #ff8f45 100%);
+	pointer-events: none;
+	z-index: 1;
+}
+
 @keyframes arcade-spin {
 	to { transform: translate(-50%, -50%) rotate(360deg); }
 }
