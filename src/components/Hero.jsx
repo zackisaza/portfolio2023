@@ -139,24 +139,26 @@ const Hero = () => {
 					{/* Startup mini-card — desktop only; on mobile it collided with the 3D computer */}
 					<motion.a
 						href='#mycompany'
-						className='group mt-4 lg:ml-5 hidden lg:inline-flex items-center gap-4 rounded-2xl border border-black-100/10 bg-white/70 backdrop-blur-md px-4 py-3 shadow-lg hover:shadow-xl hover:border-black-100/25 transition-all duration-300'
+						className='group mt-4 lg:ml-5 hidden lg:inline-flex items-center gap-4 rounded-2xl border border-white/10 bg-black/80 backdrop-blur-md px-4 py-3 shadow-lg hover:shadow-xl hover:border-white/25 transition-all duration-300'
 						whileHover={{ scale: 1.02 }}
 						whileTap={{ scale: 0.98 }}>
-						<img
-							src={wolfcave}
-							alt='WolfCave logo'
-							width='48'
-							height='48'
-							className='w-12 h-12 object-contain drop-shadow group-hover:scale-110 transition-transform duration-300'
-						/>
+						<span className='flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white shadow-md group-hover:scale-110 transition-transform duration-300'>
+							<img
+								src={wolfcave}
+								alt='WolfCave logo'
+								width='44'
+								height='44'
+								className='w-11 h-11 object-contain'
+							/>
+						</span>
 						<span className='flex flex-col text-left'>
-							<span className='text-[11px] font-semibold uppercase tracking-wider text-black-100/50'>
+							<span className='text-[11px] font-semibold uppercase tracking-wider text-white/50'>
 								{t("hero.startupLabel")}
 							</span>
-							<span className='text-[18px] font-bold text-black-100 leading-tight'>
+							<span className='text-[18px] font-bold text-white leading-tight'>
 								WolfCave
 							</span>
-							<span className='mt-0.5 inline-flex items-center gap-1 text-[13px] font-semibold text-tertiary'>
+							<span className='mt-0.5 inline-flex items-center gap-1 text-[13px] font-semibold text-[#e0495c]'>
 								{t("hero.startupCta")}
 								<svg
 									xmlns='http://www.w3.org/2000/svg'
