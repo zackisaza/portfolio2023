@@ -3,7 +3,7 @@ import { styles } from "../styles";
 import { staggerContainer } from "../utils/motion";
 
 
-const SectionWrapper = (Component, idName) => 
+const SectionWrapper = (Component, idName, maxWidth = "max-w-7xl") =>
     function HOC() {
         return (
             <motion.section
@@ -14,7 +14,7 @@ const SectionWrapper = (Component, idName) =>
                     once: true,
                     amount: 0.1
                 }}
-                className={`${styles.padding} max-w-7xl mx-auto realtive z-0`}
+                className={`${styles.padding} ${maxWidth} mx-auto realtive z-0`}
             >
                 <span className="hash-span" id={idName}>
                     &nbsp;

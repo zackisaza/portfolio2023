@@ -4,9 +4,11 @@ import { OrbitControls, useGLTF, AdaptiveDpr, Float } from '@react-three/drei';
 import CanvasLoader from '../Loader'
 
 // Fixed placement + entrance timing (module scope so they aren't React deps).
-const baseScale = 2.72; // 20% smaller than the original 3.4
 const posY = -0.7; // centered; fits fully thanks to the pulled-back camera
 const GROW_DURATION = 1.1; // seconds — entrance grow-in duration
+// Planet size: smaller on mobile, ~20% larger on desktop (xl) where there's room.
+const SCALE_MOBILE = 2.72;
+const SCALE_DESKTOP = 3.26;
 
 const Earth = ({ visible = true }) => {
 	const earth = useGLTF('./planet/scene.gltf')
@@ -14,6 +16,14 @@ const Earth = ({ visible = true }) => {
 	// Entrance grow-in: captured on the first rendered frame so the planet scales
 	// up from nothing regardless of when the canvas mounts into view.
 	const startRef = useRef(null);
+	const [baseScale, setBaseScale] = useState(SCALE_MOBILE);
+	useEffect(() => {
+		const mq = window.matchMedia('(min-width: 1280px)');
+		const update = () => setBaseScale(mq.matches ? SCALE_DESKTOP : SCALE_MOBILE);
+		update();
+		mq.addEventListener('change', update);
+		return () => mq.removeEventListener('change', update);
+	}, []);
 
 	useFrame(({ clock }) => {
 		const group = groupRef.current;
