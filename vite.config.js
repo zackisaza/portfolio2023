@@ -9,6 +9,13 @@ export default defineConfig({
   esbuild: {
     drop: ['console', 'debugger'],
   },
+  // Vitest configuration (ignored by the Vite build, read by `npm test`).
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: './src/test/setup.js',
+    include: ['src/**/*.{test,spec}.{js,jsx}'],
+  },
   define: {
     global: 'globalThis',
   },

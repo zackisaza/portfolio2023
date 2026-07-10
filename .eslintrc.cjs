@@ -10,7 +10,10 @@ module.exports = {
   settings: { react: { version: '18.2' } },
   plugins: ['react-refresh'],
   rules: {
-    'react-refresh/only-export-components': 'warn',
+    // Dev-only HMR hint. Off because every section is exported through the
+    // `SectionWrapper` HOC (an anonymous component export) and several files
+    // intentionally co-locate small helper constants/hooks with their component.
+    'react-refresh/only-export-components': 'off',
     // Project does not use PropTypes; relying on TS/author discipline
     'react/prop-types': 'off',
     // Ignore unused React import (automatic JSX runtime)
@@ -20,9 +23,10 @@ module.exports = {
   },
   overrides: [
     {
-      files: ['src/components/canvas/**/*.{js,jsx}'],
+      // React Three Fiber components use non-DOM JSX props (position, args,
+      // geometry, intensity, …) that this DOM-oriented rule flags as unknown.
+      files: ['src/components/canvas/**/*.{js,jsx}', 'src/components/BoosterBox3D.jsx'],
       rules: {
-        // Three.js in R3F uses non-DOM JSX props like position, args, etc.
         'react/no-unknown-property': 'off',
       },
     },

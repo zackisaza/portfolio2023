@@ -1,8 +1,11 @@
 {
-  "name": "portfolio",
+  "name": "zackisaza-portfolio",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -10,6 +13,9 @@
     "optimize:images": "node scripts/optimize-images.mjs",
     "favicons": "node scripts/generate-favicons.mjs",
     "lint": "eslint src --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "format": "prettier --write \"src/**/*.{js,jsx,css}\"",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -21,22 +27,26 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.10.0",
     "react-tilt": "^1.0.2",
-    "react-vertical-timeline-component": "^3.6.0",
     "three": "^0.150.1"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^14.3.1",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
-    "@vitejs/plugin-react": "^4.0.0-beta.0",
+    "@vitejs/plugin-react": "^4.7.0",
     "autoprefixer": "^10.4.14",
     "eslint": "^8.38.0",
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.3.4",
+    "jsdom": "^23.2.0",
     "postcss": "^8.4.23",
+    "prettier": "^3.9.5",
     "sharp": "^0.34.4",
     "tailwindcss": "^3.3.1",
     "vite": "^4.3.0",
-    "vite-plugin-compression": "^0.5.1"
+    "vite-plugin-compression": "^0.5.1",
+    "vitest": "^0.34.6"
   }
 }
